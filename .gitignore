@@ -1,0 +1,55 @@
+# Global ignores
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.bak
+
+# IntelliJ IDEA
+.idea/
+*.iml
+backend/.idea/
+ui/.idea/
+
+# VSCode
+.vscode/
+backend/.vscode/
+ui/.vscode/
+
+# Java build artifacts
+backend/target/
+backend/build/
+backend/out/
+backend/*.class
+backend/*.jar
+backend/*.war
+
+# Maven
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+
+# Gradle
+backend/.gradle/
+backend/build/
+
+# Node/Frontend temp files (if you ever add tooling later)
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+
+# Environment files
+.env
+*.env.local
+
+# NGINX & Docker
+nginx/*.log
+nginx/tmp/
+nginx/cache/
+
+# OS-generated files
+*.DS_Store
+ehthumbs.db
+Icon?
+
