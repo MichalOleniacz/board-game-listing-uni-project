@@ -1,9 +1,54 @@
 version: '3.9'
 services:
+  postgres:
+    container_name: boardgamehub-core-db
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: playground
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - postgres
+    ports:
+      - "5432:5432"
+
+  adminer:
+    container_name: boardgamehub-core-db-adminer
+    image: adminer
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - postgres
+    ports:
+      - 8081:8080
+
   backend:
     build: .
     container_name: boardgamehub-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - postgres
     ports:
-      - "8080:8080"
-    environment:
-      - LOG_LEVEL=DEBUG
+      - 8080:8080
+    profiles:
+      - full
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  postgres:
