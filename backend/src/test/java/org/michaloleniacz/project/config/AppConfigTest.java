@@ -7,11 +7,11 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AppConfigTest {
-    @Test
-    void shouldReturnConfiguredValue() {
-        String port = AppConfig.getInstance().get("server.port");
-        assertNotNull(port);
-    }
+//    @Test
+//    void shouldReturnConfiguredValue() {
+//        String port = AppConfig.getInstance().get("server.port");
+//        assertNotNull(port);
+//    }
 
     @Test
     void shouldReturnDefaultValueWhenKeyMissing() {

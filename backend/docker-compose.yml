@@ -7,5 +7,3 @@ services:
       - "8080:8080"
     environment:
       - LOG_LEVEL=DEBUG
-    volumes:
-      - .:/app

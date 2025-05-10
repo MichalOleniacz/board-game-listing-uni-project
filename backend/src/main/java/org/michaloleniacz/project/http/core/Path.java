@@ -1,8 +1,8 @@
 package org.michaloleniacz.project.http.core;
 
 public enum Path {
-    Ping("/ping"),
-    KochamCieBardzo("/k");
+    Ping("/ping")
+    ;
 
     private String path;
 
