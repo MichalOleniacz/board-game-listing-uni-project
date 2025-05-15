@@ -1,6 +1,7 @@
 package org.michaloleniacz.project.http.core.routing;
 
 import com.sun.net.httpserver.HttpExchange;
+import org.michaloleniacz.project.http.core.context.RequestContext;
 import org.michaloleniacz.project.http.handlers.BaseHttpHandler;
 
 import java.io.IOException;
@@ -16,7 +17,8 @@ public class RouteDispatcher extends BaseHttpHandler {
 
         if (maybeResolvedRoute.isPresent()) {
             ResolvedRoute resolvedRoute = maybeResolvedRoute.get();
-            resolvedRoute.handler().handle(exchange, resolvedRoute.pathParams());
+            RequestContext ctx = new RequestContext(exchange, resolvedRoute.pathParams());
+            resolvedRoute.handler().handle(ctx);
         } else {
             sendResponse(exchange, 404, "Not Found");
         }

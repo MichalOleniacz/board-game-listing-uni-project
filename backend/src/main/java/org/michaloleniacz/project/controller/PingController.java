@@ -1,24 +1,24 @@
 package org.michaloleniacz.project.controller;
 
-import com.sun.net.httpserver.HttpExchange;
-import org.michaloleniacz.project.http.core.HttpResponseBuilder;
+import org.michaloleniacz.project.http.HttpStatus;
+import org.michaloleniacz.project.http.core.context.RequestContext;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class PingController {
-    public static void handle(HttpExchange exchange, Map<String, String> pathParams) throws IOException {
-        new HttpResponseBuilder()
+    public static void handle(RequestContext ctx) throws IOException {
+        ctx.response()
                 .body("Pong!")
-                .status(200)
-                .send(exchange);
+                .status(HttpStatus.OK)
+                .send();
     }
 
-    public static void handleWithId(HttpExchange exchange, Map<String, String> pathParams) throws IOException {
-        final String id = pathParams.get("id");
-        new HttpResponseBuilder()
+    public static void handleWithId(RequestContext ctx) throws IOException {
+        final String id = ctx.getPathParam("id");
+        ctx.response()
                 .json("{\"id\": \"" + id + "\", \"message\": \"pong\"}")
-                .status(200)
-                .send(exchange);
+                .status(HttpStatus.OK)
+                .send();
     }
+
 }

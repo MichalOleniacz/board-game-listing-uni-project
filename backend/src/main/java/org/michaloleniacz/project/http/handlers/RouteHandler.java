@@ -1,11 +1,10 @@
 package org.michaloleniacz.project.http.handlers;
 
-import com.sun.net.httpserver.HttpExchange;
+import org.michaloleniacz.project.http.core.context.RequestContext;
 
 import java.io.IOException;
-import java.util.Map;
 
 @FunctionalInterface
 public interface RouteHandler {
-    void handle(HttpExchange exchange, Map<String, String> pathParams) throws IOException;
+    void handle(RequestContext requestContext) throws IOException;
 }

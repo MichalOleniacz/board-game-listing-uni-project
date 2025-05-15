@@ -1,0 +1,55 @@
+package org.michaloleniacz.project.http.core.context;
+
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
+import org.michaloleniacz.project.http.HttpStatus;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
+public class ResponseContext {
+    private final HttpExchange exchange;
+    private final Headers headers;
+    private HttpStatus status;
+    private byte[] body = new byte[0];
+
+    public ResponseContext(HttpExchange exchange) {
+        this.exchange = exchange;
+        this.headers = exchange.getResponseHeaders();
+    }
+
+    public ResponseContext status(HttpStatus status) {
+        this.status = status;
+        return this;
+    }
+
+    public ResponseContext body(String bodyText) {
+        this.body = bodyText.getBytes(StandardCharsets.UTF_8);
+        return this;
+    }
+
+    public ResponseContext json(String json) {
+        headers.add("Content-Type", "application/json");
+        this.body = json.getBytes(StandardCharsets.UTF_8);
+        return this;
+    }
+
+    public ResponseContext header(String key, String value) {
+        headers.add(key, value);
+        return this;
+    }
+
+    public ResponseContext redirect(String location) {
+        status(HttpStatus.MOVED_PERMANENTLY);
+        header("Location", location);
+        return this;
+    }
+
+    public void send() throws IOException {
+        exchange.sendResponseHeaders(status.getCode(), body.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(body);
+        }
+    }
+}

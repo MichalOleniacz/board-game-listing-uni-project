@@ -4,9 +4,9 @@ import org.michaloleniacz.project.util.Logger;
 
 public class LoggerMiddleware {
     public static Middleware logRequest() {
-        return next -> (exchange, params) -> {
-            Logger.info("" + exchange.getRequestMethod() + " " + exchange.getRequestURI());
-            next.handle(exchange, params);
+        return next -> (ctx) -> {
+            Logger.info("" + ctx.getMethod() + " " + ctx.getPath());
+            next.handle(ctx);
         };
     }
 }

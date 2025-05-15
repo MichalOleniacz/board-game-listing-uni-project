@@ -2,8 +2,10 @@ package org.michaloleniacz.project.http.core.routing;
 
 import org.junit.jupiter.api.Test;
 import org.michaloleniacz.project.http.core.HttpMethod;
+import org.michaloleniacz.project.http.core.context.RequestContext;
 import org.michaloleniacz.project.http.handlers.RouteHandler;
 import org.michaloleniacz.project.http.middleware.Middleware;
+import org.michaloleniacz.project.testutil.FakeHttpExchange;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,22 +17,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RouteBuilderTest {
+
     @Test
     void shouldCallAllMiddlewareInOrder() throws IOException {
         List<String> log = new ArrayList<>();
 
-        Middleware m1 = next -> (exchange, params) -> {
+        Middleware m1 = next -> (req) -> {
             log.add("m1");
-            next.handle(exchange, params);
+            next.handle(req);
         };
-        Middleware m2 = next -> (exchange, params) -> {
+        Middleware m2 = next -> (req) -> {
             log.add("m2");
-            next.handle(exchange, params);
+            next.handle(req);
         };
-        RouteHandler finalHandler = (exchange, params) -> log.add("handler");
+        RouteHandler finalHandler = (req) -> log.add("handler");
 
         RouteHandler wrapped = m1.apply(m2.apply(finalHandler));
-        wrapped.handle(null, Map.of());
+
+        RequestContext ctx = new RequestContext(new FakeHttpExchange("GET", "/test", ""), Map.of());
+        wrapped.handle(ctx);
 
         assertEquals(List.of("m1", "m2", "handler"), log);
     }
@@ -39,17 +44,17 @@ public class RouteBuilderTest {
     void shouldRegisterRouteWithComposedMiddleware() throws IOException {
         List<String> log = new ArrayList<>();
 
-        Middleware m1 = next -> (exchange, params) -> {
+        Middleware m1 = next -> (req) -> {
             log.add("m1");
-            next.handle(exchange, params);
+            next.handle(req);
         };
 
-        Middleware m2 = next -> (exchange, params) -> {
+        Middleware m2 = next -> (req) -> {
             log.add("m2");
-            next.handle(exchange, params);
+            next.handle(req);
         };
 
-        RouteHandler handler = (exchange, params) -> log.add("handler");
+        RouteHandler handler = (req) -> log.add("handler");
 
         // Act
         RouteRegistry.route(HttpMethod.GET, "/test")
@@ -60,7 +65,9 @@ public class RouteBuilderTest {
         // Simulate request
         Optional<ResolvedRoute> resolved = RouteRegistry.resolve("GET", "/test");
         assertTrue(resolved.isPresent());
-        resolved.get().handler().handle(null, Map.of());
+
+        RequestContext ctx = new RequestContext(new FakeHttpExchange("GET", "/test", ""), Map.of());
+        resolved.get().handler().handle(ctx);
 
         // Assert middleware was composed in correct order
         assertEquals(List.of("m1", "m2", "handler"), log);
