@@ -8,4 +8,13 @@ FROM eclipse-temurin:21-jdk
 WORKDIR /app
 COPY --from=builder /app/target/gameboardprojectbackend.jar /app/app.jar
 EXPOSE 8080
-CMD ["java", "-jar", "/app/app.jar"]
+EXPOSE 5005
+
+ENTRYPOINT ["sh", "-c", "\
+  if [ \"$DEBUG\" = 1 ]; then \
+    echo 'Starting in DEBUG mode on port 5005'; \
+    exec java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar app.jar; \
+  else \
+    echo 'Starting in NORMAL mode'; \
+    exec java -jar app.jar; \
+  fi"]

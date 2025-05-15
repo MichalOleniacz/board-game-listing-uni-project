@@ -41,8 +41,11 @@ services:
         condition: service_healthy
     networks:
       - postgres
+    environment:
+      - DEBUG=${DEBUG:-0}
     ports:
-      - 8080:8080
+      - "8080:8080"
+      - "5005:5005"
     profiles:
       - full
 
