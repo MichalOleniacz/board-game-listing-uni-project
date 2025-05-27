@@ -1,8 +1,8 @@
 package org.michaloleniacz.project.persistance.impl;
 
 import org.michaloleniacz.project.auth.UserRole;
-import org.michaloleniacz.project.dto.UserDto;
-import org.michaloleniacz.project.model.User;
+import org.michaloleniacz.project.shared.dto.UserDto;
+import org.michaloleniacz.project.user.User;
 import org.michaloleniacz.project.persistance.core.JdbcPostgresAdapter;
 import org.michaloleniacz.project.persistance.core.PaginatedResult;
 import org.michaloleniacz.project.persistance.domain.UserRepository;

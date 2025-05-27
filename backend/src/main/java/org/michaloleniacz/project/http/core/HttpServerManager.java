@@ -2,28 +2,37 @@ package org.michaloleniacz.project.http.core;
 
 import com.sun.net.httpserver.HttpServer;
 import org.michaloleniacz.project.config.AppConfig;
-import org.michaloleniacz.project.http.core.routing.Router;
 import org.michaloleniacz.project.util.Logger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-public final class HttpServerSingleton implements IHttpServer {
+public final class HttpServerManager implements IHttpServer {
     private static final int PORT = AppConfig.getInstance().getInt("http.server.port", 8080);
-    private static HttpServerSingleton instance = null;
-    private HttpServer serverInstance = null;
+    private static volatile HttpServerManager instance = null;
+    private final HttpServer serverInstance;
 
-    private HttpServerSingleton() {
+    private HttpServerManager() {
         try {
             serverInstance = HttpServer.create(new InetSocketAddress(PORT), 0);
             final int threadCount = AppConfig.getInstance().getInt("http.server.threadCount", 10);
             serverInstance.setExecutor(Executors.newFixedThreadPool(threadCount));
-            configureRoutes();
         } catch (IOException e) {
-            Logger.error("Fatal error - failed to create HTTP server...");
-            e.printStackTrace();
+            Logger.error("Fatal error - failed to create HTTP server...\n" + e.toString());
+            throw new RuntimeException("Failed to initialize HTTP server", e);
         }
+    }
+
+    public static HttpServerManager getInstance() {
+        if (instance == null) {
+            synchronized (HttpServerManager.class) {
+                if (instance == null) {
+                    instance = new HttpServerManager();
+                }
+            }
+        }
+        return instance;
     }
 
     @Override
@@ -39,16 +48,7 @@ public final class HttpServerSingleton implements IHttpServer {
     }
 
     @Override
-    public void configureRoutes() {
-        Logger.info("Configuring routes...");
-        Router.configure(serverInstance);
-    }
-
-    public static HttpServerSingleton getInstance() {
-        if (HttpServerSingleton.instance != null) {
-            return HttpServerSingleton.instance;
-        }
-        HttpServerSingleton.instance = new HttpServerSingleton();
-        return HttpServerSingleton.instance;
+    public HttpServer getServer() {
+        return serverInstance;
     }
 }

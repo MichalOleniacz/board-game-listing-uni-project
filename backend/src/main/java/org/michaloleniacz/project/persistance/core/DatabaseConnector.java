@@ -14,9 +14,9 @@ public class DatabaseConnector {
 
     static {
         AppConfig config = AppConfig.getInstance();
-        url = config.get("db.url");
-        user = config.get("db.user");
-        pass = config.get("db.pass");
+        url = config.get("persistance.db.url");
+        user = config.get("persistance.db.user");
+        pass = config.get("persistance.db.pass");
 
         if (url == null || user == null || pass == null) {
             throw new RuntimeException("Database configuration missing in app.properties");

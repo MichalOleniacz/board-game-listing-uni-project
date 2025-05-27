@@ -3,6 +3,7 @@ package org.michaloleniacz.project.http.core.context;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import org.michaloleniacz.project.http.HttpStatus;
+import org.michaloleniacz.project.util.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,10 +47,17 @@ public class ResponseContext {
         return this;
     }
 
-    public void send() throws IOException {
-        exchange.sendResponseHeaders(status.getCode(), body.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(body);
+    public void send() {
+        try {
+            exchange.sendResponseHeaders(status.getCode(), body.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(body);
+            } catch (IOException e) {
+                Logger.error("Failed to send response...\n" + e.getMessage());
+            }
+        }
+        catch (IOException e) {
+            Logger.error("Failed to send response...\n" + e.getMessage());
         }
     }
 }

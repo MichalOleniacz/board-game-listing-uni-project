@@ -1,21 +1,35 @@
 package org.michaloleniacz.project.http.core.routing;
 
 import com.sun.net.httpserver.HttpServer;
-import org.michaloleniacz.project.controller.PingController;
+import org.michaloleniacz.project.auth.AuthMiddleware;
+import org.michaloleniacz.project.health.HealthController;
 import org.michaloleniacz.project.http.core.HttpMethod;
-import org.michaloleniacz.project.http.middleware.LoggerMiddleware;
+import org.michaloleniacz.project.loader.ComponentRegistry;
+import org.michaloleniacz.project.middleware.LoggerMiddleware;
+import org.michaloleniacz.project.session.SessionMiddleware;
 
 public class Router {
-    public static void configure(HttpServer server) {
-        RouteRegistry.route(HttpMethod.GET, "/ping")
-                .middleware(LoggerMiddleware.logRequest())
-                .handler(PingController::handle);
-        RouteRegistry.route(HttpMethod.GET, "/ping/:id")
-                .middleware(LoggerMiddleware.logRequest())
-                .handler(PingController::handleWithId);
 
-        for (String path : RouteRegistry.getPaths()) {
-            server.createContext(path.toString(), new RouteDispatcher());
+    private final RouteRegistry routeRegistry;
+
+    private final LoggerMiddleware loggerMiddleware = ComponentRegistry.get(LoggerMiddleware.class);
+
+    private final SessionMiddleware sessionMiddleware = ComponentRegistry.get(SessionMiddleware.class);
+    private final AuthMiddleware authMiddleware = ComponentRegistry.get(AuthMiddleware.class);
+
+    private final HealthController healthController = ComponentRegistry.get(HealthController.class);
+
+
+    public Router(final RouteRegistry routeRegistry) {
+        this.routeRegistry = routeRegistry;
+    }
+
+    public void configure(HttpServer server) {
+        routeRegistry.route(HttpMethod.GET, "/health")
+                .handler(healthController::handle);
+
+        for (String path : routeRegistry.getPaths()) {
+            server.createContext(path.toString(), new RouteDispatcher(routeRegistry));
         }
     }
 }

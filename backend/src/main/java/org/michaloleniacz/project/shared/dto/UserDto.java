@@ -1,4 +1,4 @@
-package org.michaloleniacz.project.dto;
+package org.michaloleniacz.project.shared.dto;
 
 import org.michaloleniacz.project.auth.UserRole;
 

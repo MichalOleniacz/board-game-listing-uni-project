@@ -1,4 +1,4 @@
-package org.michaloleniacz.project.http.middleware;
+package org.michaloleniacz.project.middleware;
 
 import org.michaloleniacz.project.http.handlers.RouteHandler;
 

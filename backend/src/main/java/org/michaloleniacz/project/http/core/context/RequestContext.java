@@ -1,6 +1,8 @@
 package org.michaloleniacz.project.http.core.context;
 
 import com.sun.net.httpserver.HttpExchange;
+import org.michaloleniacz.project.session.Session;
+import org.michaloleniacz.project.shared.dto.UserDto;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -14,6 +16,9 @@ public class RequestContext {
     private final Map<String, String> queryParams;
     private final Map<String, String> cookies;
     private final ResponseContext response;
+    private UUID requestId;
+    private Session session;
+    private UserDto user;
 
     public RequestContext(HttpExchange ex, Map<String, String> pathParams) {
         this.exchange = ex;
@@ -63,6 +68,24 @@ public class RequestContext {
     public HttpExchange getRawHttpExchange() {
         return exchange;
     }
+
+    public void setRequestId(UUID rId) {
+        requestId = rId;
+    }
+
+    public void setSession(Session s) {
+        session = s;
+    }
+
+    public void setUser(UserDto u) { user = u;}
+
+    public Optional<UserDto> getUser() { return Optional.ofNullable(user); }
+
+    public Optional<Session> getSession() {
+        return Optional.ofNullable(session);
+    }
+
+    public boolean hasSession() { return session != null && user != null; }
 
     private Map<String, String> parseQueryParams(HttpExchange exchange) {
         final String rawQuery = exchange.getRequestURI().getRawQuery();

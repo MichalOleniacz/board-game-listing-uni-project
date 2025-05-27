@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.michaloleniacz.project.http.core.HttpMethod;
 import org.michaloleniacz.project.http.core.context.RequestContext;
 import org.michaloleniacz.project.http.handlers.RouteHandler;
-import org.michaloleniacz.project.http.middleware.Middleware;
+import org.michaloleniacz.project.middleware.Middleware;
 import org.michaloleniacz.project.testutil.FakeHttpExchange;
 
 import java.io.IOException;

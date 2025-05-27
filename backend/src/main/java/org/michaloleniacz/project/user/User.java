@@ -1,7 +1,7 @@
-package org.michaloleniacz.project.model;
+package org.michaloleniacz.project.user;
 
 import org.michaloleniacz.project.auth.UserRole;
-import org.michaloleniacz.project.dto.UserDto;
+import org.michaloleniacz.project.shared.dto.UserDto;
 
 import java.util.UUID;
 

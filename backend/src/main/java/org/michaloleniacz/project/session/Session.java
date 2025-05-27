@@ -1,4 +1,4 @@
-package org.michaloleniacz.project.model;
+package org.michaloleniacz.project.session;
 
 import java.time.Instant;
 import java.util.UUID;

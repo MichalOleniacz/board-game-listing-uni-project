@@ -1,7 +1,9 @@
 package org.michaloleniacz.project.http.core;
 
+import com.sun.net.httpserver.HttpServer;
+
 public interface IHttpServer {
-    public void start();
-    public void stop();
-    public void configureRoutes();
+    void start();
+    void stop();
+    HttpServer getServer();
 }
