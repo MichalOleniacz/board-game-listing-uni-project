@@ -28,14 +28,10 @@ public class AppLoader {
 
         // Services
         ComponentRegistry.register(HealthService.class, new HealthService());
-        ComponentRegistry.register(MadziaService.class, new MadziaService());
 
         // Controllers
         ComponentRegistry.register(HealthController.class, new HealthController(
                 ComponentRegistry.get(HealthService.class)
-        ));
-        ComponentRegistry.register(MadziaController.class, new MadziaController(
-                ComponentRegistry.get(MadziaService.class)
         ));
     }
 }
