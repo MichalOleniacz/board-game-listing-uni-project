@@ -4,6 +4,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import org.michaloleniacz.project.http.HttpStatus;
 import org.michaloleniacz.project.util.Logger;
+import org.michaloleniacz.project.util.json.JsonUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,9 +31,9 @@ public class ResponseContext {
         return this;
     }
 
-    public ResponseContext json(String json) {
+    public ResponseContext json(Object body) {
         headers.add("Content-Type", "application/json");
-        this.body = json.getBytes(StandardCharsets.UTF_8);
+        this.body = JsonUtil.toJson(body).getBytes(StandardCharsets.UTF_8);
         return this;
     }
 

@@ -14,6 +14,12 @@ public class MemoryUserRepositoryImpl implements UserRepository {
     public MemoryUserRepositoryImpl() {
 
     }
+
+    @Override
+    public Optional<User> findFullUserByEmail(String email) {
+        return Optional.empty();
+    }
+
     @Override
     public Optional<UserDto> findByEmail(String email) {
         return Optional.empty();

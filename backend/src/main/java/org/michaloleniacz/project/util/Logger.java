@@ -29,12 +29,6 @@ public class Logger {
         Logger.minLogLevel = logLevel.ordinal();
     }
 
-    public static void setRequestId(UUID rId) { requestId.set(rId); }
-
-    public static void clearRequestId() {
-        requestId.remove();
-    }
-
     private static String prettify(LogLevel level, String time, String threadName, String rId, String callerClassName, String message) {
         return String.format("[%s] [%s] [%s] [rid:%s] [%s] %s %s", time, threadName, level.getLabel(), rId, callerClassName, message, level.getColorCode());
     }

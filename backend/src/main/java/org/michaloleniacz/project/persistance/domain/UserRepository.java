@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository extends CrudRepository<UserDto, User, UUID> {
+    Optional<User> findFullUserByEmail(String email);
     Optional<UserDto> findByEmail(String email);
     Optional<UserDto> findByUsername(String username);
     boolean updateUsername(UUID id, String newUsername);

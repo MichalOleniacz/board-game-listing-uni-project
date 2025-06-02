@@ -1,5 +1,4 @@
 package org.michaloleniacz.project;
-import com.sun.net.httpserver.HttpServer;
 import org.michaloleniacz.project.config.AppConfig;
 import org.michaloleniacz.project.http.core.HttpServerManager;
 import org.michaloleniacz.project.http.core.routing.RouteRegistry;

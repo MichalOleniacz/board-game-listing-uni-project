@@ -3,6 +3,8 @@ package org.michaloleniacz.project.http.core.context;
 import com.sun.net.httpserver.HttpExchange;
 import org.michaloleniacz.project.session.Session;
 import org.michaloleniacz.project.shared.dto.UserDto;
+import org.michaloleniacz.project.util.json.JsonMapper;
+import org.michaloleniacz.project.util.json.JsonUtil;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -16,6 +18,7 @@ public class RequestContext {
     private final Map<String, String> queryParams;
     private final Map<String, String> cookies;
     private final ResponseContext response;
+    private Object parsedBody;
     private UUID requestId;
     private Session session;
     private UserDto user;
@@ -42,6 +45,27 @@ public class RequestContext {
         }
 
         return queryParams.get(key);
+    }
+
+    public <T> void setParsedBody(T parsedBody) {
+        this.parsedBody = parsedBody;
+    }
+
+    public <T> T getParsedBody() {
+        if (parsedBody == null) {
+            throw new IllegalStateException("RequestContext has not been parsed");
+        }
+        return (T) parsedBody;
+    }
+
+    public <T> T bodyAsJson(Class<T> type) {
+        try {
+            String body = getBodyAsString();
+            Map<String, Object> rawMap = JsonUtil.parseJsonToMap(body);
+            return JsonMapper.mapToRecord(rawMap, type);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getHeader(String name) {

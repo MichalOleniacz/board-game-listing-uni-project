@@ -2,11 +2,11 @@ version: '3.9'
 services:
   postgres:
     container_name: boardgamehub-core-db
-    image: postgres
+    image: postgres:16
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_PASSWORD: example
       POSTGRES_DB: boardgamehub
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -19,6 +19,24 @@ services:
       - postgres
     ports:
       - "5432:5432"
+    profiles:
+      - db
+
+  redis:
+    container_name: boardgamehub-core-redis
+    image: redis:7
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    ports:
+      - "6379:6379"
+    networks:
+      - postgres
+    profiles:
+      - db
 
   adminer:
     container_name: boardgamehub-core-db-adminer

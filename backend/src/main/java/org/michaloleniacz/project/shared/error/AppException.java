@@ -1,5 +1,7 @@
 package org.michaloleniacz.project.shared.error;
 
+import org.michaloleniacz.project.shared.dto.ErrorResponseDto;
+
 public class AppException extends RuntimeException {
     private final int statusCode;
 
@@ -10,5 +12,9 @@ public class AppException extends RuntimeException {
 
     public int getStatusCode() {
         return statusCode;
+    }
+
+    public ErrorResponseDto toDto() {
+        return new ErrorResponseDto(this.getClass().getSimpleName(), getMessage());
     }
 }

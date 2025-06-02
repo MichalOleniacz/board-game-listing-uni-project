@@ -31,7 +31,7 @@ public class AppConfig {
         return properties.getProperty(key);
     }
 
-    public Object getOrDefault(String key, Object defaultValue) {
+    public <T> Object getOrDefault(String key, T defaultValue) {
         return properties.getOrDefault(key, defaultValue);
     }
 

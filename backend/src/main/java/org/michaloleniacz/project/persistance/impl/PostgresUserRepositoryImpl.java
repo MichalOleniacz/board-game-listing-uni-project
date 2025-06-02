@@ -31,6 +31,16 @@ public class PostgresUserRepositoryImpl implements UserRepository {
         );
     }
 
+    private User mapUser(ResultSet rs) throws SQLException {
+        return new User(
+                rs.getObject("id", UUID.class),
+                rs.getString("username"),
+                rs.getString("email"),
+                rs.getString("password_hash"),
+                UserRole.valueOf(rs.getString("role"))
+        );
+    }
+
     @Override
     public Optional<UserDto> findById(UUID id) {
         return jdbcAdapter.queryOne(
@@ -88,6 +98,15 @@ public class PostgresUserRepositoryImpl implements UserRepository {
                 "SELECT id, username, email, role FROM users WHERE email = ?",
                 stmt -> stmt.setString(1, email),
                 rs -> mapUserDto(rs)
+        );
+    }
+
+    @Override
+    public Optional<User> findFullUserByEmail(String email) {
+        return jdbcAdapter.queryOne(
+                "SELECT id, username, email, password_hash, role FROM users WHERE email = ?",
+                stmt -> stmt.setString(1, email),
+                rs -> mapUser(rs)
         );
     }
 
