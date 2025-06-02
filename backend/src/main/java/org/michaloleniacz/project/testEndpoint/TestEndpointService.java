@@ -16,7 +16,7 @@ public class TestEndpointService {
     public void handle(RequestContext ctx) {
 
         Map<String, String> map = new HashMap<>();
-        map.put("test", ctx.getPathParam("param"));
+        map.put("test", ctx.getUser().get().username());
 
         ctx.response()
                 .status(HttpStatus.OK)

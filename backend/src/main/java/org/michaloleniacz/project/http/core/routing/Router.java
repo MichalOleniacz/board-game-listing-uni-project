@@ -14,6 +14,7 @@ import org.michaloleniacz.project.middleware.LoggerMiddleware;
 import org.michaloleniacz.project.session.SessionMiddleware;
 import org.michaloleniacz.project.testEndpoint.TestEndpointController;
 import org.michaloleniacz.project.testEndpoint.TestRequest;
+import org.michaloleniacz.project.user.User;
 import org.michaloleniacz.project.user.UserController;
 
 public class Router {
@@ -41,7 +42,7 @@ public class Router {
 
         routeRegistry.route(HttpMethod.GET, "/test")
                 .middleware(sessionMiddleware.hydrateSession())
-                .middleware(authMiddleware.requireAuthenticated())
+                .middleware(authMiddleware.requireRole(UserRole.ADMIN))
                 .handler(testController::handle);
 
         routeRegistry.route(HttpMethod.GET, "/test/:param")

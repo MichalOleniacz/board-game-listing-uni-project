@@ -2,8 +2,8 @@ package org.michaloleniacz.project.shared.error;
 
 import org.michaloleniacz.project.http.HttpStatus;
 
-public class ForbiddenExcpetion extends AppException {
-    public ForbiddenExcpetion(String message) {
+public class ForbiddenException extends AppException {
+    public ForbiddenException(String message) {
         super(message, HttpStatus.FORBIDDEN.getCode());
     }
 }
