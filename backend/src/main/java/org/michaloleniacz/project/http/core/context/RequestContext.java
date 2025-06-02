@@ -132,7 +132,7 @@ public class RequestContext {
     private Map<String, String> parseCookies(HttpExchange ex) {
         final List<String> cookieHeaders = exchange.getRequestHeaders().get("Cookie");
         if (cookieHeaders == null) {
-            return null;
+            return Map.of();
         }
 
         Map<String, String> cookies = cookieHeaders.stream()

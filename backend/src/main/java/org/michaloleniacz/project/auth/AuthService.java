@@ -36,6 +36,13 @@ public class AuthService {
     }
 
     public void login(RequestContext ctx) {
+        if (ctx.hasSession()) {
+            ctx.response()
+                    .status(HttpStatus.TEMPORARY_REDIRECT)
+                    .header("Location", redirectUrl)
+                    .send();
+            return;
+        }
         AuthLoginRequestDto dto = ctx.getParsedBody();
 
         Optional<User> maybeExistingUser = userRepository.findFullUserByEmail(dto.email());
@@ -67,6 +74,14 @@ public class AuthService {
     }
 
     public void register(RequestContext ctx) throws InternalServerErrorException, BadRequestException {
+        if (ctx.hasSession()) {
+            ctx.response()
+                    .status(HttpStatus.TEMPORARY_REDIRECT)
+                    .header("Location", redirectUrl)
+                    .send();
+            return;
+        }
+
         AuthRegisterRequestDto dto = ctx.getParsedBody();
 
         Optional<UserDto> maybeExistingUser = userRepository.findByEmail(dto.email());

@@ -54,11 +54,13 @@ public class Router {
 
         routeRegistry.route(HttpMethod.POST, "/auth/login")
                 .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
                 .middleware(bodyParserMiddleware.parseToDTO(AuthLoginRequestDto.class))
                 .handler(authController::login);
 
         routeRegistry.route(HttpMethod.POST, "/auth/register")
                 .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
                 .middleware(bodyParserMiddleware.parseToDTO(AuthRegisterRequestDto.class))
                 .handler(authController::register);
 
