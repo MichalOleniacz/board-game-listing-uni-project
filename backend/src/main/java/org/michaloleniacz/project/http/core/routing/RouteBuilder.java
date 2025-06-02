@@ -27,7 +27,7 @@ public class RouteBuilder {
 
     public void handler(RouteHandler finalHandler) {
         RouteHandler composed = finalHandler;
-        for (int i = 0; i < middlewareList.size(); i++) {
+        for (int i = middlewareList.size() - 1; i >= 0; i--) {
             composed = middlewareList.get(i).apply(composed);
         }
         Logger.debug("Registering route: " + method + " " + path);

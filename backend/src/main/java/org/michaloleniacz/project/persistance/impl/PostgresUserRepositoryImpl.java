@@ -45,7 +45,7 @@ public class PostgresUserRepositoryImpl implements UserRepository {
     public Optional<UserDto> findById(UUID id) {
         return jdbcAdapter.queryOne(
                 "SELECT id, username, email, role FROM users WHERE id = ?",
-                stmt -> stmt.setString(1, id.toString()),
+                stmt -> stmt.setObject(1, id),
                 rs -> mapUserDto(rs)
         );
     }

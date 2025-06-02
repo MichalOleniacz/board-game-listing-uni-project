@@ -27,6 +27,7 @@ public class AuthService {
     private final AppConfig appConfig = AppConfig.getInstance();
     private final int sessionTTL = appConfig.getInt("auth.session.ttl", 3600);
     private final String redirectUrl = appConfig.get("auth.redirectUrl");
+    private final String sessionCookieName = appConfig.get("session.cookie.name");
 
     public AuthService(UserRepository userRepository, SessionRepository sessionRepository, PasswordHasherStrategy passwordHasherImpl) {
         this.userRepository = userRepository;
@@ -61,7 +62,7 @@ public class AuthService {
         ctx.response()
                 .status(HttpStatus.OK)
                 .header("Location", redirectUrl)
-                .header("Set-Cookie", "SESSIONID=" + sessionToken.toString())
+                .header("Set-Cookie", sessionCookieName + "=" + sessionToken.toString())
                 .send();
     }
 
@@ -101,7 +102,7 @@ public class AuthService {
         ctx.response()
                 .status(HttpStatus.CREATED)
                 .header("Location", redirectUrl)
-                .header("Set-Cookie", "SESSIONID=" + sessionToken.toString())
+                .header("Set-Cookie", sessionCookieName + "=" + sessionToken.toString())
                 .send();
     }
 }

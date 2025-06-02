@@ -4,6 +4,7 @@ import org.michaloleniacz.project.shared.error.BadRequestException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.RecordComponent;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
@@ -50,6 +51,10 @@ public class JsonMapper {
             if (type == int.class || type == Integer.class) {
                 if (value instanceof Number n) return n.intValue();
                 return Integer.parseInt(value.toString());
+            }
+
+            if (type == Instant.class) {
+                return Instant.parse(value.toString());
             }
 
             if (type == long.class || type == Long.class) {

@@ -40,6 +40,8 @@ public class Router {
                 .handler(healthController::handle);
 
         routeRegistry.route(HttpMethod.GET, "/test")
+                .middleware(sessionMiddleware.hydrateSession())
+                .middleware(authMiddleware.requireAuthenticated())
                 .handler(testController::handle);
 
         routeRegistry.route(HttpMethod.GET, "/test/:param")
