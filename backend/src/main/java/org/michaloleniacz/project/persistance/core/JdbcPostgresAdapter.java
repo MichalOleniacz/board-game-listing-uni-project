@@ -28,8 +28,8 @@ public class JdbcPostgresAdapter {
         }
     }
 
-    public <T> List<T> queryMany(final String sql, final SQLConsumer<? super PreparedStatement> paramSetter, final SQLCollector<? super ResultSet, ? extends T> sqlCollector) {
-        final List<T> results = new ArrayList<>();
+    public <T> ArrayList<T> queryMany(final String sql, final SQLConsumer<? super PreparedStatement> paramSetter, final SQLCollector<? super ResultSet, ? extends T> sqlCollector) {
+        final ArrayList<T> results = new ArrayList<>();
 
         try (final Connection conn = DatabaseConnector.getConnection();
              final PreparedStatement stmt = conn.prepareStatement(sql)) {

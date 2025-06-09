@@ -1,5 +1,7 @@
 package org.michaloleniacz.project.util.json;
 
+import org.michaloleniacz.project.auth.UserRole;
+
 import java.time.Instant;
 import java.util.*;
 import java.lang.reflect.*;
@@ -11,12 +13,45 @@ public class JsonUtil {
         if (obj instanceof UUID uuid) return '"' + uuid.toString() + '"';
         if (obj instanceof Instant instant) return '"' + instant.toString() + '"';
         if (obj instanceof Number || obj instanceof Boolean) return obj.toString();
+        if (obj instanceof java.sql.Date sqlDate) {
+            return '"' + sqlDate.toLocalDate().toString() + '"'; // ISO format (e.g. 2024-06-04)
+        }
+        if (obj instanceof java.util.Date date) {
+            return '"' + date.toInstant().toString() + '"'; // ISO 8601 with time
+        }
+        if (obj instanceof UserRole role) {
+            return '"' + role.toString() + '"';
+        }
         if (obj instanceof Map<?, ?> map) return serializeMap(map);
         if (obj instanceof List<?> list) return serializeList(list);
         if (obj.getClass().isArray()) return serializeArray((Object[]) obj);
 
         return serializeObject(obj);
     }
+
+//    public static <T> List<T> mapToRecordList(List<Object> rawList, Class<T> type) {
+//        List<T> result = new ArrayList<>();
+//        for (Object item : rawList) {
+//            if (!(item instanceof Map<?, ?> map)) {
+//                throw new BadRequestException("Expected object in list for type " + type.getSimpleName());
+//            }
+//            result.add(mapToRecord((Map<String, Object>) map, type));
+//        }
+//        return result;
+//    }
+//
+//    public static <T> PaginatedResult<T> parsePaginatedResult(String json, Class<T> innerType) {
+//        Map<String, Object> map = parseJsonToMap(json);
+//
+//        int pageSize = (int) map.get("pageSize");
+//        int pageNumber = (int) map.get("pageNumber");
+//        int currentOffset = (int) map.get("currentOffset");
+//
+//        List<Object> rawList = (List<Object>) map.get("result");
+//        List<T> result = JsonMapper.mapToRecordList(rawList, innerType);
+//
+//        return new PaginatedResult<>(result, pageSize, currentOffset, pageNumber);
+//    }
 
     public static Map<String, Object> parseJsonToMap(String json) {
         Map<String, Object> map = new HashMap<>();
@@ -63,19 +98,41 @@ public class JsonUtil {
 
 
     private static Object parseJsonValue(String value) {
+        value = value.trim();
+
         if (value.startsWith("\"") && value.endsWith("\"")) {
             return value.substring(1, value.length() - 1);
-        } else if ("true".equals(value) || "false".equals(value)) {
+        }
+
+        if (value.startsWith("[") && value.endsWith("]")) {
+            return parseJsonArray(value);
+        }
+
+        if ("true".equals(value) || "false".equals(value)) {
             return Boolean.parseBoolean(value);
-        } else {
-            try {
-                if (value.contains(".")) return Double.parseDouble(value);
-                else return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                return value;
-            }
+        }
+
+        try {
+            if (value.contains(".")) return Double.parseDouble(value);
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return value;
         }
     }
+
+    private static List<Object> parseJsonArray(String json) {
+        List<Object> list = new ArrayList<>();
+        json = json.substring(1, json.length() - 1).trim(); // strip [ ]
+
+        if (json.isEmpty()) return list;
+
+        List<String> elements = splitJsonEntries(json); // reuse existing safe splitter
+        for (String elem : elements) {
+            list.add(parseJsonValue(elem.trim()));
+        }
+        return list;
+    }
+
 
     private static String serializeObject(Object obj) {
         StringBuilder sb = new StringBuilder();

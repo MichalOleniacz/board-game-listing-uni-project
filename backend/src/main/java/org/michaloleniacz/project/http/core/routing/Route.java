@@ -3,6 +3,7 @@ package org.michaloleniacz.project.http.core.routing;
 import org.michaloleniacz.project.http.core.HttpMethod;
 import org.michaloleniacz.project.http.handlers.RouteHandler;
 import org.michaloleniacz.project.http.utils.PathPattern;
+import org.michaloleniacz.project.util.Logger;
 
 import java.util.Map;
 import java.util.Objects;
@@ -19,10 +20,17 @@ public class Route {
     }
 
     public boolean matches(HttpMethod httpMethod, String rawPath) {
+        if (httpMethod == HttpMethod.OPTIONS) {
+            return pathPattern.matches(rawPath);
+        }
         return Objects.equals(method.toString(), httpMethod.toString()) && pathPattern.matches(rawPath);
     }
 
     public boolean matches(String httpMethod, String rawPath) {
+        if (Objects.equals(httpMethod, HttpMethod.OPTIONS.name())) {
+            Logger.debug("Matched http method: " + httpMethod + " path: " + rawPath);
+            return pathPattern.matches(rawPath);
+        }
         return Objects.equals(method.toString(), httpMethod.toString()) && pathPattern.matches(rawPath);
     }
 

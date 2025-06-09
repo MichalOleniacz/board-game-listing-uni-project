@@ -9,7 +9,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    public void getUser(RequestContext context) {
-        userService.getUser(context);
+    public void getUserByEmail(RequestContext context) {
+        userService.getUserByEmail(context);
     }
 }

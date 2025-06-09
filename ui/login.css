@@ -1,0 +1,277 @@
+:root {
+    --font-color-heading: #000;
+    --font-color-paragraph: #1E1E1E;
+    --font-weight-heading: 600;
+    --font-weight-paragraph: 400;
+    --font-size-heading: 24px;
+    --font-size-paragraph: 16px;
+    --btn-color-primary: #2C2C2C;
+    --form-element-height: 50px;
+}
+
+
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
+body {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+label {
+    font-weight: var(--font-weight-paragraph);
+    font-size: var(--font-size-paragraph);
+    color: var(--font-color-paragraph);
+    padding-bottom: 8px;
+}
+
+.heroImageWrapper {
+    height: 20vh;
+    width: 100%;
+}
+
+.heroImageWrapper > img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+.loginWidget {
+    width: 97%;
+    min-height: 85vh;
+    transform: translate(0, -5%);
+    background: linear-gradient(135deg, #E8E8E8 100%, #FFFFFF 0%);
+    box-shadow: 18px 18px 36px rgba(156, 156, 156, 0.2), -18px -18px 36px rgba(156, 156, 156, 0.2), 18px -18px 36px rgba(255, 255, 255, 0.9), -18px 18px 45px rgba(156, 156, 156, 0.9);
+    border-radius: 20px 20px 0px 0px;
+    padding: 23px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.loginWidgetLogoWrapper {
+    width: 100%;
+    height: 126px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 8px;
+}
+
+.loginWidgetLogoWrapper > img {
+    height: 70px;
+    width: 70px;
+    object-fit: contain;
+}
+
+.loginWidgetFormWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding-bottom: 36px;
+}
+
+.loginWidgetFormWrapper > h1 {
+    font-weight: var(--font-weight-heading);
+    color: var(--font-color-heading);
+    padding-bottom: 16px;
+}
+
+.loginWidgetFormWrapper > form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.loginWidgetFormWrapper {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.emailInputWrapper, .passwordInputWrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-bottom: 16px;
+}
+
+.formField {
+    width: 100%;
+    height: var(--form-element-height);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+
+    background: #FFFFFF;
+    border: 1px solid #D9D9D9;
+    border-radius: 8px;
+    font-weight: var(--font-weight-paragraph);
+    font-size: var(--font-size-paragraph);
+    line-height: 100%;
+
+    color: var(--font-color-paragraph);
+}
+
+.passwordInputWrapper > img {
+    position: absolute;
+    bottom: 28px;
+    right: 0;
+    padding-right: 8px;
+}
+
+.formSubmitBtnWithIcon {
+    width: 100%;
+    height: var(--form-element-height);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    gap: 8px;
+
+    background: var(--btn-color-primary);
+    border: 1px solid var(--btn-color-primary);
+    border-radius: 8px;
+
+    color: #fff;
+    font-weight: var(--font-weight-heading);
+    font-size: 16px;
+}
+
+.divider {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: #D9D9D9;
+}
+
+.signupSectionWrapper {
+    width: 100%;
+    padding-top: 36px;
+}
+
+.signupSectionWrapper > h1 {
+    font-weight: var(--font-weight-heading);
+    line-height: 120%;
+}
+
+.signupSectionWrapper > h4 {
+    font-weight: var(--font-weight-paragraph);
+    line-height: 120%;
+
+    font-size: 12px;
+    letter-spacing: 0.5px;
+
+    color: var(--font-color-paragraph);
+
+    padding-top: 8px;
+    padding-bottom: 16px;
+}
+
+.becomeMemberBtn {
+    width: 100%;
+    height: var(--form-element-height);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    gap: 8px;
+
+    cursor: pointer;
+
+    border: 1px solid #767676;
+    border-radius: 8px;
+}
+
+footer {
+    position: relative;
+    padding: 36px 0px 0px 0px;
+}
+
+@media (min-width: 768px) {
+    body {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #fff;
+    }
+
+    .heroImageWrapper {
+        height: auto;
+        width: 55%;
+        max-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-right: 24px;
+    }
+
+    .heroImageWrapper > img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        border-radius: 12px;
+    }
+
+    .loginWidget {
+        position: relative;
+        width: 420px;
+        min-height: auto;
+        transform: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 48px rgba(0, 0, 0, 0.2);
+        padding: 36px;
+        background: #f2f2f2;
+    }
+
+    .loginWidgetFormWrapper > h1 {
+        font-size: 28px;
+    }
+
+    .formSubmitBtnWithIcon {
+        font-size: 16px;
+    }
+
+    .signupSectionWrapper > h1 {
+        font-size: 20px;
+    }
+
+    .signupSectionWrapper > h4 {
+        font-size: 14px;
+    }
+
+    footer {
+        padding-top: 24px;
+        text-align: center;
+    }
+}

@@ -1,0 +1,185 @@
+:root {
+    --font-color-heading: #000;
+    --font-color-paragraph: #1E1E1E;
+    --font-weight-heading: 600;
+    --font-weight-paragraph: 400;
+    --font-size-heading: 24px;
+    --font-size-paragraph: 16px;
+    --btn-bg-active: #2C2C2C;
+    --btn-bg-inactive: #e0e0e0;
+    --card-bg: #fff;
+    --border-radius: 16px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+}
+
+body {
+    background: #f2f2f2;
+    color: var(--font-color-paragraph);
+    padding-bottom: 32px;
+}
+
+.pageHeader {
+    background: #e0e0e0;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    width: 32px;
+    height: 32px;
+}
+
+.menuIcon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.topGamesContent {
+    padding: 20px;
+}
+
+h1 {
+    font-size: 20px;
+    font-weight: var(--font-weight-heading);
+    margin-bottom: 16px;
+}
+
+.filterBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.filterBtn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: var(--font-weight-paragraph);
+    background-color: var(--btn-bg-inactive);
+    color: var(--font-color-paragraph);
+    cursor: pointer;
+}
+
+.filterBtn.active {
+    background-color: var(--btn-bg-active);
+    color: white;
+}
+
+.gamesList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.gameCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    flex-direction: column;
+}
+
+.gameInfo {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.rank {
+    font-size: 20px;
+    font-weight: var(--font-weight-heading);
+}
+
+.gameText h2 {
+    font-size: 16px;
+    font-weight: var(--font-weight-heading);
+}
+
+.gameText p {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.scoreBlock label,
+.reviewBlock label {
+    font-size: 12px;
+    color: #888;
+}
+
+.scoreValue {
+    font-size: 20px;
+    font-weight: var(--font-weight-heading);
+}
+
+/* Hide extra fields on mobile */
+.desktopOnly {
+    display: none;
+}
+
+/* --- Desktop Media Query --- */
+@media (min-width: 768px) {
+    h1 {
+        font-size: 32px;
+    }
+
+    .gamesList {
+        gap: 24px;
+    }
+
+    .gameCard {
+        flex-direction: row;
+        align-items: center;
+        padding: 24px 32px;
+    }
+
+    .gameInfo {
+        flex: 1;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 0;
+    }
+
+    .rank {
+        font-size: 32px;
+    }
+
+    .gameText h2 {
+        font-size: 20px;
+    }
+
+    .gameText p {
+        font-size: 15px;
+    }
+
+    .stats {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        width: auto;
+    }
+
+    .desktopOnly {
+        display: block;
+    }
+}

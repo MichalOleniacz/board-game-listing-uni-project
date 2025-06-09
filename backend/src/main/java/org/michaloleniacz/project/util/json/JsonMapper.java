@@ -5,9 +5,7 @@ import org.michaloleniacz.project.shared.error.BadRequestException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.RecordComponent;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class JsonMapper {
     public static <T> T mapToRecord(Map<String, Object> map, Class<T> type) {
@@ -75,6 +73,26 @@ public class JsonMapper {
             if (type == UUID.class) {
                 return UUID.fromString(value.toString());
             }
+
+            if (type == ArrayList.class || type == List.class) {
+                if (!(value instanceof List<?> rawList)) {
+                    throw new BadRequestException("Expected array, got: " + value.getClass().getSimpleName());
+                }
+
+                // Try best-effort Integer list
+                ArrayList<Integer> casted = new ArrayList<>();
+                for (Object item : rawList) {
+                    if (item instanceof Number n) casted.add(n.intValue());
+                    else casted.add(Integer.parseInt(item.toString()));
+                }
+                return casted;
+            }
+
+            if (type == UUID.class) return UUID.fromString(value.toString());
+            if (type == Instant.class) return Instant.parse(value.toString());
+            if (type == java.sql.Date.class) return java.sql.Date.valueOf(value.toString());
+            if (type == Date.class) return Date.from(Instant.parse(value.toString()));
+            if (type == boolean.class || type == Boolean.class) return Boolean.parseBoolean(value.toString());
         } catch (Exception e) {
             throw new BadRequestException("Invalid value for field: " + name + ". Expected " + type.getSimpleName());
         }

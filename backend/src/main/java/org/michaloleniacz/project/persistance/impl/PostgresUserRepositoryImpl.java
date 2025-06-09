@@ -51,26 +51,6 @@ public class PostgresUserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public PaginatedResult<UserDto> findAll(int pageNumber) {
-        final int offset = (pageNumber - 1) * PAGE_SIZE;
-        final int fetchSize = PAGE_SIZE + 1;
-
-        List<UserDto> results = jdbcAdapter.queryMany(
-                "SELECT id, username, email, role FROM users ORDER BY username ASC LIMIT ? OFFSET ?",
-                stmt -> {
-                    stmt.setInt(1, fetchSize);
-                    stmt.setInt(2, offset);
-                },
-                rs -> mapUserDto(rs)
-        );
-
-        final boolean hasNext = results.size() > PAGE_SIZE;
-        final List<UserDto> pageItems = hasNext ? results.subList(0, PAGE_SIZE) : results;
-
-        return new PaginatedResult<>(pageItems, pageNumber, PAGE_SIZE, hasNext);
-    }
-
-    @Override
     public boolean add(User userEntity) {
         return jdbcAdapter.update(
                 "INSERT INTO users (id, username, email, password_hash, role) VALUES (?, ?, ?, ?, ?)",

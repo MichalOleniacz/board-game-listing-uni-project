@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Details</title>
+    <link rel="stylesheet" href="game-details.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+</head>
+<body>
+<header class="pageHeader">
+    <img class="logo" src="assets/logo_small.png" alt="Boardsy logo" />
+    <img class="menuIcon" src="assets/menu.svg" alt="Menu" />
+</header>
+
+<main class="gameDetailsContent">
+    <section class="gameHeaderCard">
+        <h1 id="gameTitle">Loading...</h1>
+        <p class="gameDescription" id="gameDescription"></p>
+
+        <div class="gameStats">
+            <div class="statBlock">
+                <label>Players</label>
+                <div class="statValue" id="gamePlayers">–</div>
+            </div>
+            <div class="statBlock">
+                <label>Playtime</label>
+                <div class="statValue" id="gameTime">–</div>
+            </div>
+            <div class="statBlock">
+                <label>Avg. Score</label>
+                <div class="statValue" id="gameScore">–</div>
+            </div>
+        </div>
+
+        <div class="extraMeta">
+            <div id="gamePublisher" class="metaText"></div>
+            <div id="gameCategories" class="metaText"></div>
+        </div>
+    </section>
+
+    <button id="addReviewBtn" class="formSubmitBtnWithIcon">Add Review</button>
+
+    <section class="reviewSection">
+        <h2>Reviews</h2>
+        <!-- Reviews will be injected here -->
+    </section>
+</main>
+
+<!-- Add Review Modal -->
+<div class="modalOverlay hidden" id="reviewModalOverlay">
+    <div class="modalCard">
+        <h2>Add a Review</h2>
+        <div class="ratingStars" id="ratingStars">
+            <span data-rating="1">⭐</span>
+            <span data-rating="2">⭐</span>
+            <span data-rating="3">⭐</span>
+            <span data-rating="4">⭐</span>
+            <span data-rating="5">⭐</span>
+        </div>
+        <textarea id="reviewComment" class="formField" placeholder="Write your comment..."></textarea>
+        <div class="formActions">
+            <button id="submitReviewBtn" class="formSubmitBtnWithIcon">Submit</button>
+            <button id="cancelReviewBtn" class="deleteBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="/src/gameDetails.ts"></script>
+</body>
+</html>

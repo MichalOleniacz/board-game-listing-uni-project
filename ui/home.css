@@ -1,0 +1,320 @@
+:root {
+    --font-color-heading: #000;
+    --font-color-paragraph: #1E1E1E;
+    --font-weight-heading: 600;
+    --font-weight-paragraph: 400;
+    --font-size-heading: 20px;
+    --font-size-paragraph: 16px;
+    --btn-color-primary: #2C2C2C;
+    --form-element-height: 50px;
+    --card-bg: #fff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+}
+
+body {
+    background: #E5E5E5;
+    color: var(--font-color-paragraph);
+}
+
+.profileHeader {
+    background: #E0E0E0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    width: 100%;
+}
+
+.logo {
+    width: 32px;
+    height: 32px;
+}
+
+.menuIcon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.profileContent {
+    padding: 20px;
+}
+
+.profileContent > h2 {
+    font-size: 20px;
+    font-weight: var(--font-weight-heading);
+    margin-bottom: 24px;
+}
+
+.section {
+    margin-bottom: 36px;
+}
+
+.section h3 {
+    font-size: 18px;
+    font-weight: var(--font-weight-heading);
+    margin-bottom: 12px;
+}
+
+label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: var(--font-size-paragraph);
+}
+
+.formField {
+    width: 100%;
+    height: var(--form-element-height);
+    margin-bottom: 12px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: var(--font-size-paragraph);
+}
+
+.formSubmitBtnWithIcon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+    background: var(--btn-color-primary);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: var(--font-weight-heading);
+    cursor: pointer;
+}
+
+.divider {
+    border-bottom: 2px solid #ccc;
+    margin: 24px 0;
+}
+
+.preferencesList {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.preferenceItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card-bg);
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow:  7px 7px 14px #cccccc,
+    -7px -7px 14px #ffffff;
+}
+
+.preferenceItem img {
+    width: 18px;
+    height: 18px;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.addPreferenceBtn {
+    width: 100%;
+    padding: 10px;
+    background: none;
+    border: none;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    margin-top: 12px;
+}
+
+.reviewCard {
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.reviewText p {
+    margin: 4px 0;
+}
+
+.reviewText small {
+    font-size: 12px;
+    color: #666;
+    display: block;
+    margin-top: 6px;
+}
+
+.reviewAvatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.reviewActions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.reviewActions img {
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.viewMoreBtn {
+    width: 100%;
+    padding: 12px;
+    background: none;
+    border: none;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    text-align: center;
+}
+
+/* Hamburger Menu */
+.hamburgerMenu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 250px;
+    height: 100vh;
+    background-color: #f1f1f1;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    padding: 60px 20px 20px;
+}
+
+.hamburgerMenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.hamburgerMenu li {
+    margin-bottom: 24px;
+}
+
+.hamburgerMenu a {
+    text-decoration: none;
+    color: var(--font-color-paragraph);
+    font-weight: var(--font-weight-heading);
+    font-size: 16px;
+}
+
+.hamburgerMenu.open {
+    right: 0;
+}
+
+/* Desktop layout */
+@media (min-width: 768px) {
+    html, body {
+        height: 100%;
+        width: 100%;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        background-color: #E0E0E0;
+    }
+
+    .profileContent {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        gap: 48px;
+        padding: 32px 64px;
+    }
+
+    .profileContent > h2 {
+        display: none;
+    }
+
+    .section {
+        flex: 1;
+        max-width: 500px;
+    }
+
+    .profileDetailsCard {
+        background: white;
+        padding: 32px;
+        border-radius: 20px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .latestActivity {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .reviewList {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .reviewCard {
+        width: calc(50% - 8px);
+    }
+
+    .viewMoreBtn {
+        align-self: flex-end;
+        margin-top: 12px;
+        font-size: 14px;
+    }
+
+    .divider {
+        display: none;
+    }
+
+    .hamburgerMenu {
+        width: 300px;
+        padding-top: 80px;
+    }
+
+    .hamburgerMenu ul a {
+        font-size: 18px;
+    }
+
+    .menuOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 900;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .menuOverlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+}

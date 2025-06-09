@@ -109,7 +109,7 @@ label {
     justify-content: space-between;
 }
 
-.emailInputWrapper, .passwordInputWrapper {
+.emailInputWrapper, .passwordInputWrapper, .usernameInputWrapper {
     position: relative;
     width: 100%;
     display: flex;
@@ -206,6 +206,7 @@ label {
     padding: 12px;
     gap: 8px;
 
+    cursor: pointer;
 
     border: 1px solid #767676;
     border-radius: 8px;
@@ -214,4 +215,63 @@ label {
 footer {
     position: relative;
     padding: 36px 0px 0px 0px;
+}
+
+@media (min-width: 768px) {
+    body {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #fff;
+    }
+
+    .heroImageWrapper {
+        height: auto;
+        width: 55%;
+        max-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-right: 24px;
+    }
+
+    .heroImageWrapper > img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        border-radius: 12px;
+    }
+
+    .loginWidget {
+        position: relative;
+        width: 420px;
+        min-height: auto;
+        transform: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 48px rgba(0, 0, 0, 0.2);
+        padding: 36px;
+        background: #f2f2f2;
+    }
+
+    .loginWidgetFormWrapper > h1 {
+        font-size: 28px;
+    }
+
+    .formSubmitBtnWithIcon {
+        font-size: 16px;
+    }
+
+    .signupSectionWrapper > h1 {
+        font-size: 20px;
+    }
+
+    .signupSectionWrapper > h4 {
+        font-size: 14px;
+    }
+
+    footer {
+        padding-top: 24px;
+        text-align: center;
+    }
 }

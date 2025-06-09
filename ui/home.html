@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link rel="stylesheet" href="home.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+    <script type="module" src="/src/home.ts"></script>
+</head>
+<body>
+<header class="profileHeader">
+    <img class="logo" src="assets/logo_small.png" alt="Boardsy logo" />
+    <img class="menuIcon" src="assets/menu.svg" alt="Menu icon" />
+</header>
+
+<aside>
+    <nav class="hamburgerMenu" id="hamburgerMenu">
+        <ul>
+            <li><a href="/profile">My Profile</a></li>
+            <li><a href="/preferences">Preferences</a></li>
+            <li><a href="/reviews">My Reviews</a></li>
+            <li><a href="/logout">Log out</a></li>
+        </ul>
+    </nav>
+</aside>
+<div id="menuOverlay" class="menuOverlay"></div>
+
+<main class="profileContent">
+    <h2>Hi!</h2>
+
+    <section class="section profileDetailsCard">
+        <h3>Personal details</h3>
+        <form>
+            <label for="firstName">First Name</label>
+            <input id="firstName" class="formField" type="text" placeholder="John" />
+
+            <label for="lastName">Last Name</label>
+            <input id="lastName" class="formField" type="text" placeholder="Doe" />
+
+            <label for="city">City</label>
+            <input id="city" class="formField" type="text" placeholder="Kraków" />
+
+            <button class="formSubmitBtnWithIcon">
+                <img src="assets/save.svg" alt="" /> Update details
+            </button>
+        </form>
+
+        <div class="divider"></div>
+
+        <h3>Preferences</h3>
+        <ul class="preferencesList" id="userPreferenceList">
+<!--            <li class="preferenceItem">NAME<img src="assets/delete.svg" alt="" /></li>-->
+<!--            ADDED FROM API CALL -->
+        </ul>
+
+        <button class="addPreferenceBtn">+ Add new preference</button>
+    </section>
+
+    <section class="section latestActivity">
+        <h3>Latest activity</h3>
+        <div class="reviewList">
+<!--            <div class="reviewCard">-->
+<!--                <div class="stars">⭐⭐⭐⭐⭐</div>-->
+<!--                <div class="reviewText">-->
+<!--                    <strong>Review title</strong>-->
+<!--                    <p>Review body</p>-->
+<!--                    <small>Reviewer name<br />Date</small>-->
+<!--                </div>-->
+<!--                <div class="reviewActions">-->
+<!--                    <img src="assets/delete.svg" alt="Delete" />-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            ADDED FROM API CALL -->
+        </div>
+
+        <button class="viewMoreBtn">View more</button>
+    </section>
+</main>
+</body>
+</html>

@@ -15,4 +15,8 @@ public class AuthController {
     public void register(RequestContext ctx) {
         authService.register(ctx);
     }
+
+    public void logout(RequestContext ctx) {
+        authService.logout(ctx);
+    }
 }

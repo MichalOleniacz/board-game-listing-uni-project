@@ -45,10 +45,6 @@ public class MemoryUserRepositoryImpl implements UserRepository {
         return Optional.empty();
     }
 
-    @Override
-    public PaginatedResult<UserDto> findAll(int pageNumber) {
-        return null;
-    }
 
     @Override
     public boolean add(User entity) {

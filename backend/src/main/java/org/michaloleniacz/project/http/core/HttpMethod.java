@@ -4,7 +4,8 @@ public enum HttpMethod {
     GET("GET"),
     POST("POST"),
     PUT("PUT"),
-    DELETE("DELETE")
+    DELETE("DELETE"),
+    OPTIONS("OPTIONS")
     ;
 
     private final String methodName;

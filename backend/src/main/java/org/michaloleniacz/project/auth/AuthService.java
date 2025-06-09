@@ -2,6 +2,7 @@ package org.michaloleniacz.project.auth;
 
 import org.michaloleniacz.project.auth.dto.AuthLoginRequestDto;
 import org.michaloleniacz.project.auth.dto.AuthRegisterRequestDto;
+import org.michaloleniacz.project.auth.dto.AuthAttemptResponseDto;
 import org.michaloleniacz.project.config.AppConfig;
 import org.michaloleniacz.project.http.HttpStatus;
 import org.michaloleniacz.project.http.core.context.RequestContext;
@@ -11,6 +12,7 @@ import org.michaloleniacz.project.session.Session;
 import org.michaloleniacz.project.shared.dto.UserDto;
 import org.michaloleniacz.project.shared.error.BadRequestException;
 import org.michaloleniacz.project.shared.error.InternalServerErrorException;
+import org.michaloleniacz.project.shared.error.UnauthorizedException;
 import org.michaloleniacz.project.user.User;
 import org.michaloleniacz.project.util.Logger;
 import org.michaloleniacz.project.util.passwordHasher.PasswordHasherStrategy;
@@ -19,6 +21,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class AuthService {
     private final UserRepository userRepository;
@@ -27,7 +30,11 @@ public class AuthService {
     private final AppConfig appConfig = AppConfig.getInstance();
     private final int sessionTTL = appConfig.getInt("auth.session.ttl", 3600);
     private final String redirectUrl = appConfig.get("auth.redirectUrl");
+    private final String logoutUrl = appConfig.get("auth.logoutUrl");
     private final String sessionCookieName = appConfig.get("session.cookie.name");
+
+    private final AuthAttemptResponseDto authSuccessResponseDto = new AuthAttemptResponseDto(true, redirectUrl);
+    private final AuthAttemptResponseDto authFailureResponseDto = new AuthAttemptResponseDto(false, logoutUrl);
 
     public AuthService(UserRepository userRepository, SessionRepository sessionRepository, PasswordHasherStrategy passwordHasherImpl) {
         this.userRepository = userRepository;
@@ -38,8 +45,8 @@ public class AuthService {
     public void login(RequestContext ctx) {
         if (ctx.hasSession()) {
             ctx.response()
-                    .status(HttpStatus.TEMPORARY_REDIRECT)
-                    .header("Location", redirectUrl)
+                    .status(HttpStatus.OK)
+                    .json(authSuccessResponseDto)
                     .send();
             return;
         }
@@ -66,18 +73,19 @@ public class AuthService {
         );
 
         sessionRepository.save(newSession);
+
         ctx.response()
                 .status(HttpStatus.OK)
-                .header("Location", redirectUrl)
-                .header("Set-Cookie", sessionCookieName + "=" + sessionToken.toString())
+                .json(authSuccessResponseDto)
+                .header("Set-Cookie", sessionCookieName + "=" + sessionToken.toString() + "; Max-Age=" + sessionTTL +"; Path=/; HttpOnly; SameSite=Lax")
                 .send();
     }
 
     public void register(RequestContext ctx) throws InternalServerErrorException, BadRequestException {
         if (ctx.hasSession()) {
             ctx.response()
-                    .status(HttpStatus.TEMPORARY_REDIRECT)
-                    .header("Location", redirectUrl)
+                    .status(HttpStatus.OK)
+                    .json(authSuccessResponseDto)
                     .send();
             return;
         }
@@ -88,6 +96,10 @@ public class AuthService {
         if (maybeExistingUser.isPresent()) {
             throw new BadRequestException("Email already exists.");
         }
+
+        if (Stream.of(dto.email(), dto.password(), dto.username()).anyMatch(String::isEmpty)) {
+            throw new BadRequestException("All fields are required.");
+        };
 
         UUID uuid = UUID.randomUUID();
 
@@ -115,9 +127,32 @@ public class AuthService {
 
         sessionRepository.save(newSession);
         ctx.response()
-                .status(HttpStatus.CREATED)
-                .header("Location", redirectUrl)
-                .header("Set-Cookie", sessionCookieName + "=" + sessionToken.toString())
+                .status(HttpStatus.OK)
+                .json(authSuccessResponseDto)
+                .header("Set-Cookie", sessionCookieName + "=" + sessionToken.toString() + "; Max-Age=3600; Path=/; HttpOnly; SameSite=Lax")
                 .send();
+    }
+
+    public void logout(RequestContext ctx) {
+        if (!ctx.hasSession()) {
+            throw new UnauthorizedException("You are not logged in.");
+        }
+
+        Optional<Session> maybeSession = ctx.getSession();
+        if (maybeSession.isEmpty()) {
+            throw new UnauthorizedException("You are not logged in.");
+        }
+
+        Session session = maybeSession.get();
+        try {
+            sessionRepository.delete(session);
+            ctx.response()
+                    .header("Set-Cookie", "")
+                    .json(authFailureResponseDto)
+                    .status(HttpStatus.OK)
+                    .send();
+        } catch (Exception e) {
+            throw new InternalServerErrorException("Error deleting session.");
+        }
     }
 }

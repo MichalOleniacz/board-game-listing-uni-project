@@ -2,11 +2,8 @@ package org.michaloleniacz.project.persistance.factory;
 
 import org.michaloleniacz.project.config.AppConfig;
 import org.michaloleniacz.project.persistance.core.RedisClient;
-import org.michaloleniacz.project.persistance.domain.SessionRepository;
-import org.michaloleniacz.project.persistance.domain.UserRepository;
-import org.michaloleniacz.project.persistance.impl.MemorySessionRepositoryImpl;
-import org.michaloleniacz.project.persistance.impl.PostgresUserRepositoryImpl;
-import org.michaloleniacz.project.persistance.impl.RedisSessionRepositoryImpl;
+import org.michaloleniacz.project.persistance.domain.*;
+import org.michaloleniacz.project.persistance.impl.*;
 
 public class RepositoryFactory {
     public static UserRepository createUserRepository() {
@@ -33,6 +30,46 @@ public class RepositoryFactory {
             case "memory" -> new MemorySessionRepositoryImpl();
 
             default -> throw new IllegalStateException("Unexpected persistence strategy: " + userStrategyConfig);
+        };
+    }
+
+    public static PreferenceRepository createPreferenceRepository() {
+        final AppConfig config = AppConfig.getInstance();
+        final String preferenceStrategy = (String) AppConfig.getInstance().getOrDefault("persistence.strategy.preference", "postgres");
+
+        return switch (preferenceStrategy) {
+            case "postgres" -> new PostgresPreferenceRepositoryImpl();
+            default -> throw new IllegalStateException("Unexpected persistence strategy: " + preferenceStrategy);
+        };
+    }
+
+    public static ReviewRepository createReviewRepository() {
+        final AppConfig config = AppConfig.getInstance();
+        final String preferenceStrategy = (String) AppConfig.getInstance().getOrDefault("persistence.strategy.review", "postgres");
+
+        return switch (preferenceStrategy) {
+            case "postgres" -> new PostgresReviewRepositoryImpl();
+            default -> throw new IllegalStateException("Unexpected persistence strategy: " + preferenceStrategy);
+        };
+    }
+
+    public static CategoryRepository createCategoryRepository() {
+        final AppConfig config = AppConfig.getInstance();
+        final String categoryStrategy = (String) AppConfig.getInstance().getOrDefault("persistence.category.category", "postgres");
+
+        return switch (categoryStrategy) {
+            case "postgres" -> new PostgresCategoryRepositoryImpl();
+            default -> throw new IllegalStateException("Unexpected persistence strategy: " + categoryStrategy);
+        };
+    }
+
+    public static GameRepository createGameRepository() {
+        final AppConfig config = AppConfig.getInstance();
+        final String gameStrategy = (String) AppConfig.getInstance().getOrDefault("persistence.game.category", "postgres");
+
+        return switch (gameStrategy) {
+            case "postgres" -> new PostgresGameRepositoryImpl();
+            default -> throw new IllegalStateException("Unexpected persistence strategy: " + gameStrategy);
         };
     }
 }

@@ -4,7 +4,10 @@ import org.michaloleniacz.project.config.AppConfig;
 import org.michaloleniacz.project.middleware.Middleware;
 import org.michaloleniacz.project.persistance.domain.SessionRepository;
 import org.michaloleniacz.project.persistance.domain.UserRepository;
+import org.michaloleniacz.project.shared.dto.UserDto;
 import org.michaloleniacz.project.util.Logger;
+
+import java.util.Optional;
 
 public class SessionMiddleware {
     private final String SESSION_COOKIE = AppConfig.getInstance().get("session.cookie.name");
@@ -28,7 +31,11 @@ public class SessionMiddleware {
             sessionRepo.findByToken(sessionToken).ifPresent(session -> {
                 ctx.setSession(session);
 
-                userRepo.findById(session.userId()).ifPresent(ctx::setUser);
+                Optional<UserDto> maybeUser = userRepo.findById(session.userId());
+                if (maybeUser.isPresent()) {
+                    ctx.setUser(maybeUser.get());
+                    Logger.info("User found: " + maybeUser.get().id());
+                }
             });
 
             next.handle(ctx);

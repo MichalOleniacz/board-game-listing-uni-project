@@ -3,6 +3,7 @@ package org.michaloleniacz.project.http.core.context;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import org.michaloleniacz.project.http.HttpStatus;
+import org.michaloleniacz.project.persistance.core.PaginatedResult;
 import org.michaloleniacz.project.util.Logger;
 import org.michaloleniacz.project.util.json.JsonUtil;
 
@@ -50,15 +51,24 @@ public class ResponseContext {
 
     public void send() {
         try {
-            exchange.sendResponseHeaders(status.getCode(), body.length);
-            try (OutputStream os = exchange.getResponseBody()) {
-                os.write(body);
-            } catch (IOException e) {
-                Logger.error("Failed to send response...\n" + e.getMessage());
+            int contentLength = body.length;
+
+            // For 204 No Content, force content length -1 and do not write a body
+            if (status == HttpStatus.NO_CONTENT) {
+                exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), -1L);
+                return;
             }
-        }
-        catch (IOException e) {
-            Logger.error("Failed to send response...\n" + e.getMessage());
+
+            exchange.sendResponseHeaders(status.getCode(), contentLength);
+
+            try (OutputStream os = exchange.getResponseBody()) {
+                if (contentLength > 0) os.write(body);
+            } catch (IOException e) {
+                Logger.error("Failed to write response body: " + e.getMessage());
+            }
+
+        } catch (IOException e) {
+            Logger.error("Failed to send response headers: " + e.getMessage());
         }
     }
 }

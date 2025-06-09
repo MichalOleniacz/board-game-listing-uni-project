@@ -19,9 +19,17 @@ public class SHA256PasswordHasherImpl implements PasswordHasherStrategy {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(salt.getBytes(StandardCharsets.UTF_8));
             byte[] hash = md.digest(password.getBytes(StandardCharsets.UTF_8));
-            return hash.toString();
+            return bytesToHex(hash);
         } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException("Hashing failed: " + e.getMessage());
         }
+    }
+
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 }

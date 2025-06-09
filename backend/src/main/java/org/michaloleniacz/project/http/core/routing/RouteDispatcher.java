@@ -5,6 +5,7 @@ import org.michaloleniacz.project.http.HttpStatus;
 import org.michaloleniacz.project.http.core.context.RequestContext;
 import org.michaloleniacz.project.http.handlers.BaseHttpHandler;
 import org.michaloleniacz.project.shared.error.AppException;
+import org.michaloleniacz.project.shared.error.InternalServerErrorException;
 import org.michaloleniacz.project.util.Logger;
 
 import java.io.IOException;
@@ -40,7 +41,6 @@ public class RouteDispatcher extends BaseHttpHandler {
             resolvedRoute.handler().handle(ctx);
         } catch (AppException appException) {
             Logger.warn("Error boundary caught error: " + appException.getMessage());
-//            sendResponse(exchange, appException.getStatusCode(), appException.getMessage());
             ctx.response()
                     .json(appException.toDto())
                     .status(HttpStatus.valueOf(appException.getStatusCode()))
@@ -48,7 +48,10 @@ public class RouteDispatcher extends BaseHttpHandler {
         } catch (Exception e) {
             Logger.error("Unhandled exception: " + e);
             e.printStackTrace();
-            sendResponse(exchange, HttpStatus.INTERNAL_SERVER_ERROR.getCode(), HttpStatus.INTERNAL_SERVER_ERROR.getReason());
+            ctx.response()
+                    .json(new InternalServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR.getReason()).toDto())
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .send();
         }
     }
 }

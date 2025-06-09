@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="admin-panel.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+</head>
+<body>
+<header class="pageHeader">
+  <img class="logo" src="assets/logo_small.png" alt="Boardsy logo" />
+  <h1>Admin Panel</h1>
+</header>
+
+<main class="adminPanelContent">
+  <!-- User Management -->
+  <section class="adminCard">
+    <h2>Find & Edit User</h2>
+    <input type="email" id="userSearchEmail" class="formField" placeholder="Enter user email..." />
+    <button class="formSubmitBtnWithIcon" id="searchUserBtn">Search User</button>
+
+    <div id="userFormContainer" class="adminForm hidden">
+      <input type="text" id="userUsername" class="formField" placeholder="Username" />
+      <input type="text" id="userCity" class="formField" placeholder="City" />
+      <input type="text" id="userRole" class="formField" placeholder="Role (e.g. USER, ADMIN)" />
+
+      <div class="formActions">
+        <button class="formSubmitBtnWithIcon" id="saveUserBtn">Save</button>
+        <button class="deleteBtn" id="deleteUserBtn">Delete</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game Management -->
+  <section class="adminCard">
+    <h2>Find & Edit Game</h2>
+    <input type="text" id="gameSearchTitle" class="formField" placeholder="Enter game title..." />
+    <button class="formSubmitBtnWithIcon" id="searchGameBtn">Search Game</button>
+
+    <div id="gameFormContainer" class="adminForm hidden">
+      <input type="text" id="gameTitle" class="formField" placeholder="Title" />
+      <textarea id="gameDescription" class="formField" placeholder="Description"></textarea>
+      <input type="text" id="gamePublisher" class="formField" placeholder="Publisher" />
+      <input type="number" id="gameYear" class="formField" placeholder="Year Published" />
+      <input type="number" id="gameMinPlayers" class="formField" placeholder="Min players" />
+      <input type="number" id="gameMaxPlayers" class="formField" placeholder="Max players" />
+      <input type="number" id="gamePlaytime" class="formField" placeholder="Playtime (minutes)" />
+      <input type="text" id="gameImageUrl" class="formField" placeholder="Image URL" />
+
+      <div class="formActions">
+        <button class="formSubmitBtnWithIcon" id="saveGameBtn">Save</button>
+        <button class="deleteBtn" id="deleteGameBtn">Delete</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Add New Game -->
+  <section class="adminCard">
+    <h2>Add New Game</h2>
+    <input type="text" id="newGameTitle" class="formField" placeholder="Title" />
+    <textarea id="newGameDescription" class="formField" placeholder="Description"></textarea>
+    <input type="text" id="newGamePublisher" class="formField" placeholder="Publisher" />
+    <input type="number" id="newGameYear" class="formField" placeholder="Year Published" />
+    <input type="number" id="newGameMinPlayers" class="formField" placeholder="Min players" />
+    <input type="number" id="newGameMaxPlayers" class="formField" placeholder="Max players" />
+    <input type="number" id="newGamePlaytime" class="formField" placeholder="Playtime (minutes)" />
+    <input type="text" id="newGameImageUrl" class="formField" placeholder="Image URL" />
+    <button class="formSubmitBtnWithIcon" id="addGameBtn">Add Game</button>
+  </section>
+
+  <!-- Review Management -->
+  <section class="adminCard">
+    <h2>Find & Delete Reviews</h2>
+    <input type="email" id="reviewUserEmail" class="formField" placeholder="User Email" />
+    <input type="text" id="reviewGameTitle" class="formField" placeholder="Game Title" />
+    <button class="formSubmitBtnWithIcon" id="searchReviewsBtn">Search Reviews</button>
+
+    <ul id="reviewResults" class="reviewList"></ul>
+  </section>
+</main>
+
+<script type="module" src="/src/adminPanel.ts"></script>
+</body>
+</html>

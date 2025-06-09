@@ -1,0 +1,135 @@
+:root {
+    --font-color-heading: #000;
+    --font-color-paragraph: #1E1E1E;
+    --font-weight-heading: 600;
+    --font-weight-paragraph: 400;
+    --font-size-heading: 20px;
+    --font-size-paragraph: 16px;
+    --btn-color-primary: #2C2C2C;
+    --form-element-height: 48px;
+    --card-bg: #fff;
+    --border-radius: 16px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+}
+
+body {
+    background: #f5f5f5;
+    padding: 20px;
+}
+
+.pageHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 24px;
+}
+
+.pageHeader h1 {
+    font-size: 24px;
+    font-weight: var(--font-weight-heading);
+}
+
+.logo {
+    width: 32px;
+    height: 32px;
+}
+
+.adminPanelContent {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.adminCard {
+    background: var(--card-bg);
+    padding: 24px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.adminCard h2 {
+    font-size: var(--font-size-heading);
+    font-weight: var(--font-weight-heading);
+    margin-bottom: 16px;
+}
+
+.formField {
+    width: 100%;
+    height: var(--form-element-height);
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: var(--font-size-paragraph);
+}
+
+textarea.formField {
+    height: 100px;
+    resize: vertical;
+}
+
+.formSubmitBtnWithIcon {
+    background: var(--btn-color-primary);
+    color: #fff;
+    border: none;
+    padding: 12px;
+    font-weight: var(--font-weight-heading);
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.deleteBtn {
+    background: #d9534f;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    font-weight: var(--font-weight-heading);
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+.formActions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.reviewList {
+    margin-top: 12px;
+    list-style: none;
+    padding-left: 0;
+}
+
+.reviewList li {
+    background: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reviewList button {
+    background: #d9534f;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
