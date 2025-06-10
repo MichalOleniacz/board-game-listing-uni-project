@@ -23,11 +23,11 @@ CREATE TABLE IF NOT EXISTS user_preference (
 
 INSERT INTO users (id, username, email, password_hash, role)
 VALUES
-    (gen_random_uuid(), 'dummy-1', 'dummy-1@example.com', encode(digest('password', 'sha256'), 'hex'), 'USER'),
-    (gen_random_uuid(), 'dummy-2', 'dummy-2@example.com', encode(digest('password', 'sha256'), 'hex'), 'USER'),
-    (gen_random_uuid(), 'dummy-3', 'dummy-3@example.com', encode(digest('password', 'sha256'), 'hex'), 'USER'),
-    (gen_random_uuid(), 'dummy-4', 'dummy-4@example.com', encode(digest('password', 'sha256'), 'hex'), 'USER'),
-    (gen_random_uuid(), 'dummy-5', 'dummy-5@example.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
+    (gen_random_uuid(), 'dummy-1', 'dummy-1@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER'),
+    (gen_random_uuid(), 'dummy-2', 'dummy-2@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER'),
+    (gen_random_uuid(), 'dummy-3', 'dummy-3@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER'),
+    (gen_random_uuid(), 'dummy-4', 'dummy-4@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER'),
+    (gen_random_uuid(), 'dummy-5', 'dummy-5@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
 
 CREATE TABLE IF NOT EXISTS games (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -69,35 +69,35 @@ CREATE VIEW game_ranking AS
         LEFT JOIN games g ON r.game_id = g.id
     GROUP BY g.id, g.title, g.description, g.min_players, g.max_players, g.playtime_minutes, g.publisher, g.year_published, g.image_url, g.created_at ORDER BY avg_rating DESC;
 
--- Example: For demo/test setup only
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+SELECT * FROM users;
 
 -- USERS
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('39186206-a1d6-4dd9-b1fd-d87e0246da38', 'user-1', 'user-1@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('62263b94-9883-4258-9687-25e156ca979d', 'user-2', 'user-2@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('dd174a9e-5695-4e56-95d2-673cb68f4b22', 'user-3', 'user-3@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('3b1fae75-06bf-4866-8a92-5eb50f2ae19e', 'user-4', 'user-4@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('805fe1c3-bb4d-42b8-92da-76296354feff', 'user-5', 'user-5@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('b8c7fa17-e9ae-4ed5-af9c-d2c9b70ffa83', 'user-6', 'user-6@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('5067482c-067b-4f1e-a022-8a5dcce96000', 'user-7', 'user-7@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('8bc6d8f4-c51c-41c0-abb6-5ff9e91cc873', 'user-8', 'user-8@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('23890d04-cb1a-44bf-b120-d2fbea08302e', 'user-9', 'user-9@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('aa6af5a0-e364-4b14-bf64-15daa22d79f4', 'user-10', 'user-10@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('feed9ce3-4cf7-4317-9c54-aa5508a1eb61', 'user-11', 'user-11@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('d150bb63-fbe0-4edc-9ba3-26f6faea7281', 'user-12', 'user-12@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('1509d701-f954-4338-9b00-25acc7137710', 'user-13', 'user-13@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('d249d5f7-af23-462c-a36c-c9c6c0691564', 'user-14', 'user-14@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('43bd33ef-2afe-4907-aaa2-8702985e7048', 'user-15', 'user-15@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('2ed6bf69-6ded-4ac6-a54c-b65202c152b3', 'user-16', 'user-16@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('8b0161b8-166c-48ec-a470-67fa54d7e9b6', 'user-17', 'user-17@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('4c47ac92-c97d-4c3c-b022-17c5944d15ff', 'user-18', 'user-18@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('8c620869-4e8c-48d7-929c-fe5876872955', 'user-19', 'user-19@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('ef95e107-6847-4697-9f5e-fcadcb995fc1', 'user-20', 'user-20@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('15896e14-ceaa-4c6a-99fc-c7e147b28aa7', 'user-21', 'user-21@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('37564d79-fb85-48aa-bda7-6ff46d0fe4ab', 'user-22', 'user-22@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('d0d44a71-fc99-4b0f-8c86-6e0f2ef1f1eb', 'user-23', 'user-23@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('e6f49920-30b4-453b-82ea-7ebdf094d4e3', 'user-24', 'user-24@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
-INSERT INTO users (id, username, email, password_hash, role) VALUES ('21f0c7f4-c15d-4f7b-aefe-2a3461a65b46', 'user-25', 'user-25@dummy.com', encode(digest('password', 'sha256'), 'hex'), 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('39186206-a1d6-4dd9-b1fd-d87e0246da38', 'user-1', 'user-1@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('62263b94-9883-4258-9687-25e156ca979d', 'user-2', 'user-2@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('dd174a9e-5695-4e56-95d2-673cb68f4b22', 'user-3', 'user-3@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('3b1fae75-06bf-4866-8a92-5eb50f2ae19e', 'user-4', 'user-4@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('805fe1c3-bb4d-42b8-92da-76296354feff', 'user-5', 'user-5@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('b8c7fa17-e9ae-4ed5-af9c-d2c9b70ffa83', 'user-6', 'user-6@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('5067482c-067b-4f1e-a022-8a5dcce96000', 'user-7', 'user-7@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('8bc6d8f4-c51c-41c0-abb6-5ff9e91cc873', 'user-8', 'user-8@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('23890d04-cb1a-44bf-b120-d2fbea08302e', 'user-9', 'user-9@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('aa6af5a0-e364-4b14-bf64-15daa22d79f4', 'user-10', 'user-10@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('feed9ce3-4cf7-4317-9c54-aa5508a1eb61', 'user-11', 'user-11@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('d150bb63-fbe0-4edc-9ba3-26f6faea7281', 'user-12', 'user-12@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('1509d701-f954-4338-9b00-25acc7137710', 'user-13', 'user-13@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('d249d5f7-af23-462c-a36c-c9c6c0691564', 'user-14', 'user-14@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('43bd33ef-2afe-4907-aaa2-8702985e7048', 'user-15', 'user-15@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('2ed6bf69-6ded-4ac6-a54c-b65202c152b3', 'user-16', 'user-16@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('8b0161b8-166c-48ec-a470-67fa54d7e9b6', 'user-17', 'user-17@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('4c47ac92-c97d-4c3c-b022-17c5944d15ff', 'user-18', 'user-18@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('8c620869-4e8c-48d7-929c-fe5876872955', 'user-19', 'user-19@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('ef95e107-6847-4697-9f5e-fcadcb995fc1', 'user-20', 'user-20@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('15896e14-ceaa-4c6a-99fc-c7e147b28aa7', 'user-21', 'user-21@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('37564d79-fb85-48aa-bda7-6ff46d0fe4ab', 'user-22', 'user-22@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('d0d44a71-fc99-4b0f-8c86-6e0f2ef1f1eb', 'user-23', 'user-23@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('e6f49920-30b4-453b-82ea-7ebdf094d4e3', 'user-24', 'user-24@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('21f0c7f4-c15d-4f7b-aefe-2a3461a65b46', 'user-25', 'user-25@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
+INSERT INTO users (id, username, email, password_hash, role) VALUES ('21f0c7f4-c15d-4f7b-aefe-2a3461b12345', 'admin-2', 'admin-2@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'ADMIN');
 
 -- CATEGORIES
 INSERT INTO categories (id, category_name) VALUES (1, 'Strategy');
