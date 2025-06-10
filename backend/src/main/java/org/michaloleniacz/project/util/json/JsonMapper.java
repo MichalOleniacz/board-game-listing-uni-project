@@ -7,6 +7,11 @@ import java.lang.reflect.RecordComponent;
 import java.time.Instant;
 import java.util.*;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.RecordComponent;
+import java.time.Instant;
+import java.util.*;
+
 public class JsonMapper {
     public static <T> T mapToRecord(Map<String, Object> map, Class<T> type) {
         if (!type.isRecord()) throw new IllegalArgumentException("Only records supported");
@@ -29,6 +34,7 @@ public class JsonMapper {
 
             Constructor<T> constructor = type.getDeclaredConstructor(Arrays.stream(components)
                     .map(RecordComponent::getType).toArray(Class[]::new));
+            constructor.setAccessible(true); // Ensure accessibility
             return constructor.newInstance(args);
         } catch (BadRequestException e) {
             throw e;
@@ -79,7 +85,6 @@ public class JsonMapper {
                     throw new BadRequestException("Expected array, got: " + value.getClass().getSimpleName());
                 }
 
-                // Try best-effort Integer list
                 ArrayList<Integer> casted = new ArrayList<>();
                 for (Object item : rawList) {
                     if (item instanceof Number n) casted.add(n.intValue());
@@ -88,16 +93,12 @@ public class JsonMapper {
                 return casted;
             }
 
-            if (type == UUID.class) return UUID.fromString(value.toString());
-            if (type == Instant.class) return Instant.parse(value.toString());
             if (type == java.sql.Date.class) return java.sql.Date.valueOf(value.toString());
             if (type == Date.class) return Date.from(Instant.parse(value.toString()));
-            if (type == boolean.class || type == Boolean.class) return Boolean.parseBoolean(value.toString());
         } catch (Exception e) {
             throw new BadRequestException("Invalid value for field: " + name + ". Expected " + type.getSimpleName());
         }
 
         throw new BadRequestException("Invalid value for field: " + name + ". Expected " + type.getSimpleName());
     }
-
 }
