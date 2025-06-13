@@ -147,7 +147,7 @@ public class AuthService {
         try {
             sessionRepository.delete(session);
             ctx.response()
-                    .header("Set-Cookie", "")
+                    .header("Set-Cookie", "SESSIONID=; Max-Age=0; Path=/; SameSite=Lax; HttpOnly")
                     .json(authFailureResponseDto)
                     .status(HttpStatus.OK)
                     .send();

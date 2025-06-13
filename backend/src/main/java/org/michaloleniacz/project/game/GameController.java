@@ -27,4 +27,16 @@ public class GameController {
     public void createGame(RequestContext ctx) {
         gameService.createGame(ctx);
     }
+
+    public void searchGame(RequestContext ctx) {
+        gameService.searchGame(ctx);
+    }
+
+    public void updateGame(RequestContext ctx) {
+        gameService.updateGame(ctx);
+    }
+
+    public void deleteGame(RequestContext ctx) {
+        gameService.deleteGame(ctx);
+    }
 }

@@ -16,7 +16,7 @@ export default class AdminPanelManager {
         this.bindUserSection();
         this.bindGameSection();
         this.bindAddGameSection();
-        this.bindReviewSection();
+        this.bindMakeAdminSection();
     }
     bindUserSection() {
         const emailInput = document.getElementById('userSearchEmail');
@@ -92,7 +92,7 @@ export default class AdminPanelManager {
             }
         }));
         saveBtn.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
-            const res = yield this.httpClient.post('/admin/update-game', {
+            const res = yield this.httpClient.post('/admin/game/update-game', {
                 id: gameId,
                 title: title.value,
                 description: desc.value,
@@ -106,7 +106,7 @@ export default class AdminPanelManager {
             alert(res.isOk() ? 'Game updated' : 'Failed to update game');
         }));
         deleteBtn.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
-            const res = yield this.httpClient.post('/admin/delete-game', { id: gameId });
+            const res = yield this.httpClient.post(`/admin/game/delete-game?id=${encodeURIComponent(gameId)}`, {});
             alert(res.isOk() ? 'Game deleted' : 'Failed to delete game');
             container.classList.add('hidden');
         }));
@@ -122,7 +122,7 @@ export default class AdminPanelManager {
         const imageUrl = document.getElementById('newGameImageUrl');
         const addBtn = document.getElementById('addGameBtn');
         addBtn.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
-            const res = yield this.httpClient.post('/admin/add-game', {
+            const res = yield this.httpClient.post('/admin/game/create-game', {
                 title: title.value,
                 description: desc.value,
                 publisher: publisher.value,
@@ -135,39 +135,17 @@ export default class AdminPanelManager {
             alert(res.isOk() ? 'Game added' : 'Failed to add game');
         }));
     }
-    bindReviewSection() {
-        const userEmail = document.getElementById('reviewUserEmail');
-        const gameTitle = document.getElementById('reviewGameTitle');
-        const searchBtn = document.getElementById('searchReviewsBtn');
-        const resultList = document.getElementById('reviewResults');
-        searchBtn.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
-            const res = yield this.httpClient.post('/admin/find-reviews', {
-                email: userEmail.value,
-                title: gameTitle.value
-            });
-            resultList.innerHTML = '';
-            if (res.isErr()) {
-                alert('Failed to fetch reviews');
+    bindMakeAdminSection() {
+        const emailInput = document.getElementById('makeAdminEmail');
+        const makeBtn = document.getElementById('makeAdminBtn');
+        makeBtn.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
+            const email = emailInput.value.trim();
+            if (!email) {
+                alert('Please enter an email address');
                 return;
             }
-            const reviews = res.unwrap();
-            reviews.forEach(review => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-          <span><strong>${review.gameTitle}</strong>: ${review.comment}</span>
-          <button data-id="${review.id}">Delete</button>
-        `;
-                li.querySelector('button').addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
-                    const delRes = yield this.httpClient.post('/admin/delete-review', { id: review.id });
-                    if (delRes.isOk()) {
-                        li.remove();
-                    }
-                    else {
-                        alert('Failed to delete review');
-                    }
-                }));
-                resultList.appendChild(li);
-            });
+            const res = yield this.httpClient.post('/admin/user/make-user-admin', { email });
+            alert(res.isOk() ? 'User promoted to admin!' : 'Failed to promote user');
         }));
     }
 }

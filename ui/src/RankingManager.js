@@ -96,7 +96,7 @@ export default class RankingManager {
       <div class="stats">
         <div class="scoreBlock">
           <label>Avg. score</label>
-          <div class="scoreValue">${game.avgScore}</div>
+          <div class="scoreValue">${Math.round(game.avgScore * 100) / 100}/5</div>
         </div>
       </div>
     `;

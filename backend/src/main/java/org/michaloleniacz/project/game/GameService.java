@@ -1,8 +1,6 @@
 package org.michaloleniacz.project.game;
 
-import org.michaloleniacz.project.game.dto.AddNewGameRequestDto;
-import org.michaloleniacz.project.game.dto.GameDto;
-import org.michaloleniacz.project.game.dto.GetGamesInCategoryRequestDto;
+import org.michaloleniacz.project.game.dto.*;
 import org.michaloleniacz.project.http.HttpStatus;
 import org.michaloleniacz.project.http.core.context.RequestContext;
 import org.michaloleniacz.project.persistance.core.PaginatedResult;
@@ -12,6 +10,7 @@ import org.michaloleniacz.project.shared.error.BadRequestException;
 import org.michaloleniacz.project.shared.error.InternalServerErrorException;
 import org.michaloleniacz.project.shared.error.UnauthorizedException;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -124,8 +123,68 @@ public class GameService {
 
         try {
             gameRepository.save(req);
+            ctx.response()
+                    .status(HttpStatus.CREATED)
+                    .send();
         } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
+    }
+
+    public void updateGame(RequestContext ctx) {
+        if (!(ctx.hasSession() && ctx.getUser().isPresent())) {
+            throw new UnauthorizedException("You are not logged in");
+        }
+
+        UpdateGameRequestDto req = ctx.getParsedBody();
+
+        if (Stream.of(req.description(), req.title()).anyMatch(String::isEmpty)) {
+            throw new BadRequestException("Missing required parameters");
+        }
+
+        try {
+            gameRepository.update(req);
+            ctx.response()
+                    .status(HttpStatus.CREATED)
+                    .send();
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
+    public void deleteGame(RequestContext ctx) {
+        if (!(ctx.hasSession() && ctx.getUser().isPresent())) {
+            throw new UnauthorizedException("You are not logged in");
+        }
+
+        String gameIdStr = ctx.getQueryParam("id");
+        UUID gameId = UUID.fromString(gameIdStr);
+
+        try {
+            gameRepository.deleteById(gameId);
+            ctx.response()
+                    .status(HttpStatus.NO_CONTENT)
+                    .send();
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
+    public void searchGame(RequestContext ctx) {
+        if (!(ctx.hasSession() && ctx.getUser().isPresent())) {
+            throw new UnauthorizedException("You are not logged in");
+        }
+
+        SearchGameRequestDto req = ctx.getParsedBody();
+
+        if (req.query() == null || req.query().isEmpty()) {
+            throw new BadRequestException("Missing required parameters");
+        }
+
+        ArrayList<GameDto> games = gameRepository.search(req);
+        ctx.response()
+                .json(new PaginatedResponseDto(games, games.size(), 0, games.size()))
+                .status(HttpStatus.OK)
+                .send();
     }
 }

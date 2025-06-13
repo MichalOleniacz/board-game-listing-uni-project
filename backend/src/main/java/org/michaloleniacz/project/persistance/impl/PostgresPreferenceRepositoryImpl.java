@@ -18,7 +18,7 @@ public class PostgresPreferenceRepositoryImpl implements PreferenceRepository {
     @Override
     public void addPreference(UUID userId, int preferenceId) {
         jdbcAdapter.update(
-                "INSERT INTO user_preference (userid, preferenceid) VALUES (?, ?)",
+                "INSERT INTO user_preference (userid, preferenceid) VALUES (CAST(? AS UUID), ?)",
                 stmt -> {
                     stmt.setString(1, userId.toString());
                     stmt.setInt(2, preferenceId);
@@ -61,7 +61,7 @@ public class PostgresPreferenceRepositoryImpl implements PreferenceRepository {
         return jdbcAdapter.<PreferenceDto>queryMany(
                 "SELECT * FROM categories",
                 stmt -> {},
-                rs -> new PreferenceDto(rs.getInt("id"), rs.getString("name"))
+                rs -> new PreferenceDto(rs.getInt("id"), rs.getString("category_name"))
         );
     }
 }

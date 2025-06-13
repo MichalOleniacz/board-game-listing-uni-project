@@ -2,7 +2,6 @@ package org.michaloleniacz.project.util.passwordHasher.impl;
 
 import org.junit.jupiter.api.Test;
 import org.michaloleniacz.project.shared.error.InternalServerErrorException;
-import org.michaloleniacz.project.util.passwordHasher.impl.SHA256PasswordHasherImpl;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

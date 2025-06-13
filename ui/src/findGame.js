@@ -1,19 +1,15 @@
-import RankingManager from "./RankingManager";
-
+import GameSearchManager from "./FindGameManager";
 window.addEventListener('DOMContentLoaded', () => {
-    const menuIcon = document.querySelector<HTMLImageElement>('.menuIcon');
+    const menuIcon = document.querySelector('.menuIcon');
     const hamburgerMenu = document.getElementById('hamburgerMenu');
     const overlay = document.getElementById('menuOverlay');
-
-    if (!menuIcon || !hamburgerMenu || !overlay) return;
-
+    if (!menuIcon || !hamburgerMenu || !overlay)
+        return;
     const toggleMenu = () => {
         hamburgerMenu.classList.toggle('open');
         overlay.classList.toggle('active');
     };
-
     menuIcon.addEventListener('click', toggleMenu);
     overlay.addEventListener('click', toggleMenu);
-
-    new RankingManager().init();
+    new GameSearchManager().init();
 });

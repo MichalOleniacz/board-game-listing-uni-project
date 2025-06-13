@@ -2,6 +2,8 @@ package org.michaloleniacz.project.persistance.domain;
 
 import org.michaloleniacz.project.game.dto.AddNewGameRequestDto;
 import org.michaloleniacz.project.game.dto.GameDto;
+import org.michaloleniacz.project.game.dto.SearchGameRequestDto;
+import org.michaloleniacz.project.game.dto.UpdateGameRequestDto;
 import org.michaloleniacz.project.persistance.core.PaginatedResult;
 
 import java.util.ArrayList;
@@ -16,4 +18,7 @@ public interface GameRepository {
     public Optional<GameDto> findByTitle(String title);
 
     public void save(AddNewGameRequestDto gameDto);
+    void update(UpdateGameRequestDto gameDto);
+    void deleteById(UUID id);
+    public ArrayList<GameDto> search(SearchGameRequestDto searchGameRequestDto);
 }

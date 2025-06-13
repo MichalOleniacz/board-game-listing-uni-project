@@ -47,10 +47,11 @@ public class PreferenceService {
         }
 
         UserDto user = maybeUser.get();
-        AddPreferenceRequestDto body = ctx.getParsedBody();
+        String prefIdStr = ctx.getQueryParam("id");
 
         try {
-            repository.addPreference(user.id(), body.preferenceId());
+            int prefId = Integer.parseInt(prefIdStr);
+            repository.addPreference(user.id(), prefId);
             ctx.response()
                     .status(HttpStatus.CREATED)
                     .send();

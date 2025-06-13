@@ -9,7 +9,10 @@ import org.michaloleniacz.project.auth.dto.AuthRegisterRequestDto;
 import org.michaloleniacz.project.category.CategoryController;
 import org.michaloleniacz.project.cors.CorsMiddleware;
 import org.michaloleniacz.project.game.GameController;
+import org.michaloleniacz.project.game.dto.AddNewGameRequestDto;
 import org.michaloleniacz.project.game.dto.GetGamesInCategoryRequestDto;
+import org.michaloleniacz.project.game.dto.SearchGameRequestDto;
+import org.michaloleniacz.project.game.dto.UpdateGameRequestDto;
 import org.michaloleniacz.project.health.HealthController;
 import org.michaloleniacz.project.http.core.HttpMethod;
 import org.michaloleniacz.project.loader.ComponentRegistry;
@@ -25,6 +28,8 @@ import org.michaloleniacz.project.session.SessionMiddleware;
 import org.michaloleniacz.project.testEndpoint.TestEndpointController;
 import org.michaloleniacz.project.testEndpoint.TestRequest;
 import org.michaloleniacz.project.user.UserController;
+import org.michaloleniacz.project.user.dto.PromoteUserToAdminRequestDto;
+import org.michaloleniacz.project.user.dto.UserDetailsDto;
 
 public class Router {
 
@@ -90,6 +95,21 @@ public class Router {
                 .middleware(authMiddleware.requireAuthenticated())
                 .handler(authController::logout);
 
+        routeRegistry.route(HttpMethod.GET, "/user/get-user-details")
+                .middleware(corsMiddleware.allowOrigin("*"))
+                .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
+                .middleware(authMiddleware.requireAuthenticated())
+                .handler(userController::getUserDetails);
+
+        routeRegistry.route(HttpMethod.POST, "/user/update-user-details")
+                .middleware(corsMiddleware.allowOrigin("*"))
+                .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
+                .middleware(authMiddleware.requireAuthenticated())
+                .middleware(bodyParserMiddleware.parseToDTO(UserDetailsDto.class))
+                .handler(userController::updateUserDetails);
+
         routeRegistry.route(HttpMethod.GET, "/preference/get-all")
                 .middleware(corsMiddleware.allowOrigin("*"))
                 .middleware(loggerMiddleware.logRequest())
@@ -109,7 +129,6 @@ public class Router {
                 .middleware(loggerMiddleware.logRequest())
                 .middleware(sessionMiddleware.hydrateSession())
                 .middleware(authMiddleware.requireAuthenticated())
-                .middleware(bodyParserMiddleware.parseToDTO(AddPreferenceRequestDto.class))
                 .handler(preferenceController::addPreference);
 
         routeRegistry.route(HttpMethod.POST, "/preference/delete-user-preference")
@@ -134,6 +153,13 @@ public class Router {
                 .middleware(authMiddleware.requireAuthenticated())
                 .middleware(bodyParserMiddleware.parseToDTO(CreateNewReviewRequestDto.class))
                 .handler(reviewController::addNewReview);
+
+        routeRegistry.route(HttpMethod.POST, "/review/delete-user-review")
+                .middleware(corsMiddleware.allowOrigin("*"))
+                .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
+                .middleware(authMiddleware.requireAuthenticated())
+                .handler(reviewController::removeReview);
 
         routeRegistry.route(HttpMethod.GET, "/review/get-user-reviews-for-game")
                 .middleware(corsMiddleware.allowOrigin("*"))
@@ -163,13 +189,13 @@ public class Router {
                 .middleware(authMiddleware.requireAuthenticated())
                 .handler(gameController::getGameById);
 
-        routeRegistry.route(HttpMethod.GET, "/admin/game/get-game-by-title")
+        routeRegistry.route(HttpMethod.POST, "/game/search-game")
                 .middleware(corsMiddleware.allowOrigin("*"))
                 .middleware(loggerMiddleware.logRequest())
                 .middleware(sessionMiddleware.hydrateSession())
                 .middleware(authMiddleware.requireAuthenticated())
-                .middleware(authMiddleware.requireRole(UserRole.ADMIN))
-                .handler(gameController::getGameByTitle);
+                .middleware(bodyParserMiddleware.parseToDTO(SearchGameRequestDto.class))
+                .handler(gameController::searchGame);
 
         routeRegistry.route(HttpMethod.GET, "/game/get-top-games")
                 .middleware(corsMiddleware.allowOrigin("*"))
@@ -193,6 +219,50 @@ public class Router {
                 .middleware(authMiddleware.requireAuthenticated())
                 .middleware(authMiddleware.requireRole(UserRole.ADMIN))
                 .handler(userController::getUserByEmail);
+
+        routeRegistry.route(HttpMethod.POST, "/admin/user/make-user-admin")
+                .middleware(corsMiddleware.allowOrigin("*"))
+                .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
+                .middleware(authMiddleware.requireAuthenticated())
+                .middleware(authMiddleware.requireRole(UserRole.ADMIN))
+                .middleware(bodyParserMiddleware.parseToDTO(PromoteUserToAdminRequestDto.class))
+                .handler(userController::promoteUserToAdmin);
+
+        routeRegistry.route(HttpMethod.GET, "/admin/game/get-game-by-title")
+                .middleware(corsMiddleware.allowOrigin("*"))
+                .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
+                .middleware(authMiddleware.requireAuthenticated())
+                .middleware(authMiddleware.requireRole(UserRole.ADMIN))
+                .handler(gameController::getGameByTitle);
+
+        routeRegistry.route(HttpMethod.POST, "/admin/game/create-game")
+                .middleware(corsMiddleware.allowOrigin("*"))
+                .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
+                .middleware(authMiddleware.requireAuthenticated())
+                .middleware(authMiddleware.requireRole(UserRole.ADMIN))
+                .middleware(bodyParserMiddleware.parseToDTO(AddNewGameRequestDto.class))
+                .handler(gameController::createGame);
+
+        routeRegistry.route(HttpMethod.POST, "/admin/game/update-game")
+                .middleware(corsMiddleware.allowOrigin("*"))
+                .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
+                .middleware(authMiddleware.requireAuthenticated())
+                .middleware(authMiddleware.requireRole(UserRole.ADMIN))
+                .middleware(bodyParserMiddleware.parseToDTO(UpdateGameRequestDto.class))
+                .handler(gameController::updateGame);
+
+        routeRegistry.route(HttpMethod.POST, "/admin/game/delete-game")
+                .middleware(corsMiddleware.allowOrigin("*"))
+                .middleware(loggerMiddleware.logRequest())
+                .middleware(sessionMiddleware.hydrateSession())
+                .middleware(authMiddleware.requireAuthenticated())
+                .middleware(authMiddleware.requireRole(UserRole.ADMIN))
+                .handler(gameController::deleteGame);
+
 
         for (String path : routeRegistry.getPaths()) {
             server.createContext(path.toString(), new RouteDispatcher(routeRegistry));

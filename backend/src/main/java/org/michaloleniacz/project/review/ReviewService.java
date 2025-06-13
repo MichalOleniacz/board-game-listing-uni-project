@@ -138,4 +138,28 @@ public class ReviewService {
                 .status(HttpStatus.CREATED)
                 .send();
     }
+
+    public void removeReview(RequestContext ctx) {
+        if (!(ctx.hasSession() && ctx.getUser().isPresent())) {
+            throw new UnauthorizedException("You are not logged in.");
+        }
+
+        Optional<UserDto> userOpt = ctx.getUser();
+        if (userOpt.isEmpty()) {
+            throw new UnauthorizedException("You are not logged in.");
+        }
+        UserDto user = userOpt.get();
+        String reviewIdStr = ctx.getQueryParam("id");
+
+        try {
+            int id = Integer.parseInt(reviewIdStr);
+            reviewRepository.deleteUserReviewById(id, user.id());
+            ctx.response()
+                    .status(HttpStatus.NO_CONTENT)
+                    .send();
+        } catch (Exception e) {
+            throw new InternalServerErrorException("Failed to process request.\n " + e.getMessage());
+        }
+
+    }
 }

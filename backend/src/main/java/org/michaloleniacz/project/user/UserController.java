@@ -12,4 +12,16 @@ public class UserController {
     public void getUserByEmail(RequestContext context) {
         userService.getUserByEmail(context);
     }
+
+    public void getUserDetails(RequestContext context) {
+        userService.getUserDetails(context);
+    }
+
+    public void updateUserDetails(RequestContext context) {
+        userService.updateUserDetails(context);
+    }
+
+    public void promoteUserToAdmin(RequestContext context) {
+        userService.promoteUserToAdmin(context);
+    }
 }

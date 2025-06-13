@@ -4,12 +4,11 @@ import org.michaloleniacz.project.auth.UserRole;
 import org.michaloleniacz.project.shared.dto.UserDto;
 import org.michaloleniacz.project.user.User;
 import org.michaloleniacz.project.persistance.core.JdbcPostgresAdapter;
-import org.michaloleniacz.project.persistance.core.PaginatedResult;
 import org.michaloleniacz.project.persistance.domain.UserRepository;
+import org.michaloleniacz.project.user.dto.UserDetailsDto;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -63,13 +62,30 @@ public class PostgresUserRepositoryImpl implements UserRepository {
                 }
         ) > 0;
     }
+    @Override
+    public boolean addTransactional(User userEntity) {
+        return jdbcAdapter.<Boolean>transaction(conn -> {
+            return Boolean.valueOf(jdbcAdapter.updateWithConnection(
+                    conn,
+                    "INSERT INTO users (id, username, email, password_hash, role) VALUES (?, ?, ?, ?, ?)",
+                    stmt -> {
+                        stmt.setObject(1, userEntity.id());
+                        stmt.setString(2, userEntity.username());
+                        stmt.setString(3, userEntity.email());
+                        stmt.setString(4, userEntity.passwordHash());
+                        stmt.setString(5, userEntity.role().name());
+                    }
+            ) > 0);
+        }).booleanValue();
+    }
 
     @Override
     public boolean deleteById(UUID id) {
-        return jdbcAdapter.update(
+        jdbcAdapter.update(
                 "DELETE FROM users WHERE id = ?",
                 stmt -> stmt.setObject(1, id)
-        ) > 0;
+        );
+        return false;
     }
 
     @Override
@@ -119,5 +135,40 @@ public class PostgresUserRepositoryImpl implements UserRepository {
                     stmt.setObject(2, id);
                 }
         ) > 0;
+    }
+
+//    @Override
+//    public boolean deleteById(UUID id) {
+//        return jdbcAdapter.update(
+//                "DELETE FROM users WHERE id = ?",
+//                stmt -> stmt.setObject(1, id)
+//        ) > 0;
+//    }
+
+    @Override
+    public Optional<UserDetailsDto> getUserDetails(UUID id) {
+        return jdbcAdapter.queryOne(
+                "SELECT * FROM user_details WHERE user_id = ?",
+                stmt -> stmt.setObject(1, id),
+                rs -> new UserDetailsDto(rs.getString("first_name"), rs.getString("last_name"), rs.getString("city"))
+        );
+    }
+
+    @Override
+    public void updateUserDetails(UUID id, UserDetailsDto dto) {
+        jdbcAdapter.update(
+                "INSERT INTO user_details (user_id, first_name, last_name, city) " +
+                        "VALUES (?, ?, ?, ?) " +
+                        "ON CONFLICT (user_id) DO UPDATE SET " +
+                        "first_name = EXCLUDED.first_name, " +
+                        "last_name = EXCLUDED.last_name, " +
+                        "city = EXCLUDED.city",
+                stmt -> {
+                    stmt.setObject(1, id);
+                    stmt.setString(2, dto.firstName());
+                    stmt.setString(3, dto.lastName());
+                    stmt.setString(4, dto.city());
+                }
+        );
     }
 }

@@ -1,4 +1,4 @@
-import RankingManager from "./RankingManager";
+import GameSearchManager from "./FindGameManager";
 
 window.addEventListener('DOMContentLoaded', () => {
     const menuIcon = document.querySelector<HTMLImageElement>('.menuIcon');
@@ -15,5 +15,5 @@ window.addEventListener('DOMContentLoaded', () => {
     menuIcon.addEventListener('click', toggleMenu);
     overlay.addEventListener('click', toggleMenu);
 
-    new RankingManager().init();
+    new GameSearchManager().init();
 });

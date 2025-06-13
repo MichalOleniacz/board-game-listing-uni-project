@@ -1,0 +1,116 @@
+:root {
+    --font-color-paragraph: #1E1E1E;
+    --font-weight-heading: 600;
+    --card-bg: #fff;
+    --border-radius: 16px;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f2f2f2;
+    padding: 20px;
+}
+
+.pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 32px;
+    height: 32px;
+}
+
+h1 {
+    font-size: 20px;
+    font-weight: var(--font-weight-heading);
+}
+
+.reviewPage {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.reviewList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.reviewCard {
+    background: var(--card-bg);
+    padding: 16px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+.reviewStars {
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.reviewText p {
+    margin: 4px 0;
+}
+
+.reviewText small {
+    font-size: 12px;
+    color: #666;
+    display: block;
+    margin-top: 4px;
+}
+
+.reviewActions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.reviewActions button {
+    background: #d9534f;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+
+.hamburgerMenu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 250px;
+    height: 100vh;
+    background-color: #f1f1f1;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    padding: 60px 20px 20px;
+}
+
+.hamburgerMenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.hamburgerMenu li {
+    margin-bottom: 24px;
+}
+
+.hamburgerMenu a {
+    text-decoration: none;
+    color: var(--font-color-paragraph);
+    font-weight: var(--font-weight-heading);
+    font-size: 16px;
+}
+
+.hamburgerMenu.open {
+    right: 0;
+}

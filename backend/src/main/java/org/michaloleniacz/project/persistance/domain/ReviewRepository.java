@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface ReviewRepository {
     public Optional<ReviewDto> getReviewById(int reviewId);
-    public void deleteUserReviewById(int reviewId);
+    public void deleteUserReviewById(int reviewId, UUID userId);
     public PaginatedResult<ReviewDto> getAllReviewsForGame(UUID gameId, int limit, int offset);
     public PaginatedResult<ReviewDto> getUserReviewsForGame(UUID userId, UUID gameId, int limit, int offset);
     public PaginatedResult<ReviewDto> getReviewsForUser(UUID userId, int limit, int offset);

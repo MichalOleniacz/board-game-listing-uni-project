@@ -24,6 +24,7 @@ body {
 }
 
 .pageHeader {
+    width: 100%;
     background: #e0e0e0;
     padding: 16px;
     display: flex;
@@ -211,10 +212,45 @@ textarea.formField {
     gap: 8px;
 }
 
+/* Hamburger Menu */
+.hamburgerMenu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 250px;
+    height: 100vh;
+    background-color: #f1f1f1;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    padding: 60px 20px 20px;
+}
+
+.hamburgerMenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.hamburgerMenu li {
+    margin-bottom: 24px;
+}
+
+.hamburgerMenu a {
+    text-decoration: none;
+    color: var(--font-color-paragraph);
+    font-weight: var(--font-weight-heading);
+    font-size: 16px;
+}
+
+.hamburgerMenu.open {
+    right: 0;
+}
+
 /* Responsive tweaks */
 @media (min-width: 768px) {
     .gameDetailsContent {
-        max-width: 900px;
+        max-width: 70%;
         margin: 0 auto;
     }
 
@@ -228,5 +264,33 @@ textarea.formField {
 
     .reviewCard {
         padding: 20px;
+    }
+
+
+    .hamburgerMenu {
+        width: 300px;
+        padding-top: 80px;
+    }
+
+    .hamburgerMenu ul a {
+        font-size: 18px;
+    }
+
+    .menuOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 900;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .menuOverlay.active {
+        opacity: 1;
+        pointer-events: all;
     }
 }

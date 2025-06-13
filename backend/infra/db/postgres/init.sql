@@ -1,38 +1,38 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE IF NOT EXISTS users (
-                                     id UUID PRIMARY KEY,
-                                     username VARCHAR(50) NOT NULL UNIQUE,
-                                     email VARCHAR(255) NOT NULL UNIQUE,
-                                     password_hash VARCHAR(255) NOT NULL,
-                                     role VARCHAR(20) NOT NULL
+    id UUID PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_details (
+    user_id UUID primary key,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    city VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS categories (
-                                           id SERIAL PRIMARY KEY,
-                                           category_name VARCHAR(50)
+   id SERIAL PRIMARY KEY,
+   category_name VARCHAR(50)
 );
 
 CREATE TABLE IF NOT EXISTS user_preference (
-                                               userId UUID NOT NULL,
-                                               preferenceId INT NOT NULL,
-                                               PRIMARY KEY (userId, preferenceId),
-                                               FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-                                               FOREIGN KEY (preferenceId) REFERENCES categories(id) ON DELETE CASCADE
+   userId UUID NOT NULL,
+   preferenceId INT NOT NULL,
+   PRIMARY KEY (userId, preferenceId),
+   FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+   FOREIGN KEY (preferenceId) REFERENCES categories(id) ON DELETE CASCADE
 );
-
-INSERT INTO users (id, username, email, password_hash, role)
-VALUES
-    (gen_random_uuid(), 'dummy-1', 'dummy-1@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER'),
-    (gen_random_uuid(), 'dummy-2', 'dummy-2@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER'),
-    (gen_random_uuid(), 'dummy-3', 'dummy-3@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER'),
-    (gen_random_uuid(), 'dummy-4', 'dummy-4@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER'),
-    (gen_random_uuid(), 'dummy-5', 'dummy-5@example.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
 
 CREATE TABLE IF NOT EXISTS games (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(100) NOT NULL,
-    description TEXT,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
     min_players INT,
     max_players INT,
     playtime_minutes INT,
@@ -41,6 +41,51 @@ CREATE TABLE IF NOT EXISTS games (
     image_url TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE games ADD COLUMN IF NOT EXISTS fts tsvector;
+CREATE INDEX IF NOT EXISTS games_fts_idx ON games USING GIN(fts);
+
+CREATE OR REPLACE FUNCTION update_games_fts() RETURNS trigger AS $$
+BEGIN
+    NEW.fts := to_tsvector('english', coalesce(NEW.title, '') || ' ' || coalesce(NEW.description, ''));
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_update_games_fts
+    BEFORE INSERT OR UPDATE ON games
+    FOR EACH ROW EXECUTE FUNCTION update_games_fts();
+
+CREATE OR REPLACE FUNCTION search_game(search_query TEXT)
+    RETURNS TABLE (
+                id UUID,
+                title TEXT,
+                description TEXT,
+                min_players INT,
+                max_players INT,
+                playtime_minutes INT,
+                publisher VARCHAR,
+                year_published INT,
+                image_url TEXT,
+                created_at TIMESTAMP
+            ) AS $$
+BEGIN
+    RETURN QUERY
+        SELECT g.id,
+               g.title,
+               g.description,
+               g.min_players,
+               g.max_players,
+               g.playtime_minutes,
+               g.publisher,
+               g.year_published,
+               g.image_url,
+               g.created_at
+        FROM games g
+        WHERE g.fts @@ plainto_tsquery('english', search_query)
+        ORDER BY ts_rank(g.fts, plainto_tsquery('english', search_query)) DESC;
+END;
+$$ LANGUAGE plpgsql STABLE;
 
 CREATE TABLE IF NOT EXISTS game_category (
     game_id UUID NOT NULL,
@@ -62,14 +107,12 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 
 CREATE VIEW game_ranking AS
-    SELECT
-        g.*,
-        AVG(rating) AS avg_rating
-    FROM reviews r
-        LEFT JOIN games g ON r.game_id = g.id
-    GROUP BY g.id, g.title, g.description, g.min_players, g.max_players, g.playtime_minutes, g.publisher, g.year_published, g.image_url, g.created_at ORDER BY avg_rating DESC;
+SELECT g.*,
+       AVG(rating) AS avg_rating
+FROM reviews r
+         LEFT JOIN games g ON r.game_id = g.id
+GROUP BY g.id, g.title, g.description, g.min_players, g.max_players, g.playtime_minutes, g.publisher, g.year_published, g.image_url, g.created_at ORDER BY avg_rating DESC;
 
-SELECT * FROM users;
 
 -- USERS
 INSERT INTO users (id, username, email, password_hash, role) VALUES ('39186206-a1d6-4dd9-b1fd-d87e0246da38', 'user-1', 'user-1@dummy.com', 'e961696cafc92ed32672ab803f92ecb2412067caa5f07e900f59c68f7663c244', 'USER');
@@ -223,92 +266,756 @@ INSERT INTO user_preference (userId, preferenceId) VALUES ('21f0c7f4-c15d-4f7b-a
 INSERT INTO user_preference (userId, preferenceId) VALUES ('21f0c7f4-c15d-4f7b-aefe-2a3461a65b46', 17);
 INSERT INTO user_preference (userId, preferenceId) VALUES ('21f0c7f4-c15d-4f7b-aefe-2a3461a65b46', 7);
 
--- GAMES
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('8aba0cd0-5ec2-4b50-b227-aa7299faf2f6', 'Catan', 'Story clearly collection perform right them those nice. Collection very American defense radio wide interest. Movie item modern recent.', 1, 6, 90, 'Page LLC', 2017, 'https://example.com/catan.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('4c0c7e6b-d6d8-4c42-a9a4-637417e7074e', 'Carcassonne', 'Risk chair score follow those page important. My eight building artist meeting including. Shoulder thought just option.
-Soldier and research professor almost news. Girl focus its fall.', 2, 6, 45, 'Wiley, Wright and Jones', 2024, 'https://example.com/carcassonne.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('0baf8b14-51e1-4227-b86d-5bc07c9c55f6', '7 Wonders', 'Condition read interesting audience many. Station nothing better national perform main.
-Consumer pay agreement develop fill environment.
-Stand school international admit suggest figure.', 1, 4, 90, 'Baker PLC', 2012, 'https://example.com/7_wonders.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('782c8942-2d62-44a7-a2d1-08525684783c', 'Ticket to Ride', 'Power prove decade bring firm protect claim. Campaign student Mr skin company. Thank Congress bill technology.', 2, 4, 120, 'Lam-Morales', 2019, 'https://example.com/ticket_to_ride.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('69ac088b-7d9e-4364-b094-ffc3af30c125', 'Dominion', 'Determine someone on instead likely ago. Finally whether certain each individual. Politics yes into continue least. Necessary drop along second member.', 1, 6, 30, 'Burgess-Henderson', 1995, 'https://example.com/dominion.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('774700cb-a3ac-4ecb-bb70-a662e4b4368a', 'Pandemic', 'Break each out few who big cup. What go politics.
-Wait task material for himself box staff. Certainly that fill score week another along pull. Turn pull crime nearly.', 2, 6, 60, 'Cohen, Brown and Chan', 2010, 'https://example.com/pandemic.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('8834d871-5ee7-4c23-a48d-4e99e84f131d', 'Gloomhaven', 'Fact at provide beautiful scientist.
-In song build family serve drug market. Customer trial movie speech someone between morning. Power note take.
-Form also traditional consumer.', 1, 5, 60, 'Smith, Russell and Smith', 2019, 'https://example.com/gloomhaven.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('779c9d95-ed98-4f89-a04a-c4b28a96c487', 'Wingspan', 'Eye provide parent site energy yet. Future health less would apply develop address treatment.
-Others ask her allow sense trade. Do care tough leader into little young.', 1, 4, 60, 'Williams and Sons', 1995, 'https://example.com/wingspan.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('a17a2ecd-e3bf-424e-8b96-97cda76f6b21', 'Azul', 'Buy pass government early. Minute career child bit mouth kitchen two.', 2, 6, 45, 'Estes Inc', 2001, 'https://example.com/azul.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('71eb8d1e-87a7-403a-a567-b77ad63b139f', 'Splendor', 'What president hand federal account. Task bag race truth close none visit.
-Defense instead someone production station career.', 1, 6, 30, 'Sanders-Delacruz', 2023, 'https://example.com/splendor.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('f3b9670b-a56c-4f43-9f31-d819f298973b', 'Root', 'Impact across best according control mention option. Guess low culture more power old four surface. Suddenly traditional even popular star law various.', 2, 5, 120, 'Johnson-Fuller', 2011, 'https://example.com/root.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('840b898b-a88b-4b58-9b17-6f4ca13c59b6', 'Ark Nova', 'Become management store event third.
-Bring employee they street. Behind number effort young do. Spend show customer.
-Couple start man even PM how. Policy area about break truth.', 2, 5, 90, 'Fuentes, Miller and Wood', 2014, 'https://example.com/ark_nova.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('2629c56c-b011-479a-baa0-9a48b335d91c', 'Everdell', 'Any tough pay country hand when. Into cover level need admit.
-Quality term baby. Watch foreign dog pretty interesting.', 1, 4, 90, 'Moore, Ward and Johnson', 2014, 'https://example.com/everdell.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('760c629d-11ee-445b-81e3-8c87f8d0e6c6', 'The Crew', 'Attorney quite too include wide.
-Full even according create example rise. Fine like green series improve than action. He much me paper tax management kid.
-Us development line try crime.', 2, 5, 30, 'Rodriguez Group', 2024, 'https://example.com/the_crew.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('9edcb005-d2b1-4719-850f-e8066a4017f3', 'Patchwork', 'Beat young fish I. Something ground according contain. Hope theory force window.
-Point suffer improve itself young example school. Like never include fight should thank. Class it wonder energy.', 2, 6, 90, 'Kirby, Barnett and Morales', 2004, 'https://example.com/patchwork.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('31d67f68-5550-4d5f-9e36-333f1334fd48', 'Galaxy Trucker', 'Middle tonight Mr collection dog skin. Up attorney finish source far. Identify wrong good something city.', 1, 6, 45, 'Morgan Group', 2018, 'https://example.com/galaxy_trucker.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('afa64ae4-a49e-4cdc-abc8-6cee7b674864', 'The Resistance', 'Chance outside event building whatever see notice. Although too moment book class tax.', 1, 4, 90, 'Reyes, Wiggins and Allen', 2018, 'https://example.com/the_resistance.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('5f0e793e-92ed-41ab-b120-6570a49d7679', 'Twilight Struggle', 'Nice support station community staff girl.
-Catch newspaper when indicate money. Member general much perform. Medical sort later road marriage.', 1, 4, 30, 'Hayes Ltd', 2007, 'https://example.com/twilight_struggle.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('fbf3d1b9-0958-4292-80d2-385539ff62a7', 'Love Letter', 'Fight mission full huge see. Require you drop huge for prevent. Alone across join Democrat once adult drop.', 2, 5, 90, 'Mcneil LLC', 2000, 'https://example.com/love_letter.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('f55c648a-1a52-4de9-9e6f-34fe19435a24', 'Blood Rage', 'Serious wind laugh both. Unit indeed knowledge race miss push practice.
-Anything source laugh. Around feeling capital another.', 1, 6, 90, 'Costa Inc', 2005, 'https://example.com/blood_rage.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('3e33cf9d-d5fc-468e-9128-035d486d6e2d', 'Lost Ruins of Arnak', 'Case ever seat account sound different. Address themselves full both.
-Wear gas likely until. Lead buy American range simply meet. Science market particularly seven model responsibility start.', 2, 4, 30, 'Robinson-Garcia', 2020, 'https://example.com/lost_ruins_of_arnak.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('bdf4adc5-43dc-4278-bd88-1dc72daa2468', 'Isle of Skye', 'I gas phone be almost board deal. Understand first speak leave news.
-List what chair partner. Community score entire American product once particular moment.', 2, 6, 90, 'Bowman-Pacheco', 2011, 'https://example.com/isle_of_skye.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('b05fc5ad-8eb5-4125-8dbf-d85047a6e7db', 'Kingdomino', 'Likely rule discuss why contain public research. Group find surface face break.
-Card personal star beyond. Clear necessary friend position house material enter. Way spend play democratic step girl.', 1, 5, 60, 'Mccann, Russell and Doyle', 2023, 'https://example.com/kingdomino.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('9052a9d5-d3e7-40ad-8202-580ebd166e85', 'Brass: Birmingham', 'Land at standard dinner manager walk sound speech.
-Treat sign TV other. Ability moment drop magazine. Cup daughter Mrs really knowledge base let.
-Might my establish natural great my inside.', 2, 6, 90, 'Hall-Lynch', 2016, 'https://example.com/brass:_birmingham.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('4f86932e-e982-4cd2-bf1b-8e48bd0b3654', 'Agricola', 'Many onto left decide floor. Lay describe seem. Environmental sound everybody happen affect action.', 2, 4, 90, 'Fleming PLC', 1999, 'https://example.com/agricola.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('7275fbb0-0f64-483a-89c5-3f7ef1f6aef5', 'Codenames', 'Common painting to development car western recognize. After yet city including recent successful create table.
-Similar toward and focus say party. Record stay staff.', 1, 6, 45, 'Rush, Morris and Davis', 2009, 'https://example.com/codenames.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('965e9707-71e1-4e3f-b7da-3133d051aeac', 'Terraforming Mars', 'Glass include without once radio from method. Garden political international culture expert religious free news. Response try thus southern inside well provide.', 2, 5, 45, 'Martinez, Mcdowell and Contreras', 2023, 'https://example.com/terraforming_mars.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('0ad786b0-7cc0-43ec-944e-1f463704b83a', 'Scythe', 'Hotel room other two. Interesting everyone window relationship morning dinner father.
-Five player manage street expect police. Treatment physical item civil. Any then should full.', 2, 5, 60, 'Walton-Schaefer', 2005, 'https://example.com/scythe.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('a215cf6d-fe70-4bb2-89d5-6cc444f32db4', 'The Mind', 'Wait main mind food grow someone left. Author hold outside effect wait senior. Blue culture join else environment who.', 2, 6, 60, 'Powell-Gardner', 2009, 'https://example.com/the_mind.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('07563c9a-3fca-46b2-a018-e3af05c9e4de', 'Jaipur', 'Take people run push myself between. Court successful field upon central if. According computer development large chance. Them time fly both.
-Course its never would rate a pretty.', 1, 4, 90, 'Walls-Gonzalez', 1996, 'https://example.com/jaipur.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('a0044329-740e-4bf2-852d-e98a2e524684', 'Calico', 'Cold something subject discussion. Air official land dark east PM keep. Source mean win story store decision.
-Natural four protect fine vote. Expert upon hospital radio how thus. Star wear law.', 1, 5, 120, 'Mcdowell Ltd', 1998, 'https://example.com/calico.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('69026efa-dddd-408a-9ddf-cbd185b9b39d', 'Quacks of Quedlinburg', 'Very cut hundred chair artist. View computer entire. Order become truth lose.
-Trip some than relationship skin. Begin cold hard. Down customer him.', 2, 5, 90, 'Peck LLC', 2009, 'https://example.com/quacks_of_quedlinburg.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('07011961-83b3-4e78-ac5a-a820f3963f44', 'Clank!', 'Its performance training network PM order item relationship. Present Democrat series three firm husband. Pay sometimes choose certain race wall fight.', 2, 4, 45, 'Ramirez-Moore', 2001, 'https://example.com/clank!.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('272873b6-7253-4e3e-adbf-1dc22a6fcbf4', 'Great Western Trail', 'New affect even offer. Wall into place top will.
-Leave address reduce. Approach someone subject fly. Mind trouble can including plant.', 2, 6, 90, 'Lopez Inc', 2002, 'https://example.com/great_western_trail.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('d8df204d-f0f1-414b-9d25-2a39a253dfaf', 'Barrage', 'Through cup class. We live suffer least respond argue prevent single.
-Give decision gun later even lot include always. Onto later pass quickly teacher. Movie manage hold remain until trouble mission.', 1, 5, 45, 'Wallace, Anthony and Gonzales', 2001, 'https://example.com/barrage.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('27f69719-060a-4baf-b5e6-1bf538584193', 'Chronicles of Crime', 'Human serve small spring find mouth reflect.
-Wear role majority some instead Mr throughout unit. Their reason city thousand long international us knowledge.', 1, 4, 60, 'Hurley, Cox and Smith', 2011, 'https://example.com/chronicles_of_crime.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('34a5382d-c012-4372-8322-b0c83cb3ebb9', 'Cartographers', 'Social mother make author camera total more.
-My million science prepare indicate head beat represent. Investment thousand pattern. Perform alone book life sign table.', 2, 6, 60, 'Velasquez-Lowe', 2018, 'https://example.com/cartographers.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('f4340ac9-3b44-4bd8-9bf6-59b9b11e35a5', 'Tiny Towns', 'Policy economy unit build beat charge happy. Never grow leader poor turn. Administration look city him experience.', 2, 5, 90, 'Fisher Inc', 2013, 'https://example.com/tiny_towns.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('af3d7f66-771c-42e9-87ff-48adea962f70', 'Obsession', 'Seem break should. Lead figure drop address organization outside. Computer themselves media else no.
-Song voice social. Around social six hear. Throughout collection itself.', 1, 6, 60, 'Vaughn-Torres', 2021, 'https://example.com/obsession.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('004ee136-a3ff-4f53-b89e-24311a65651a', 'Viticulture', 'Southern arrive turn development daughter all. General free statement across. Woman condition meet gun season.', 1, 4, 45, 'Wilson-Reynolds', 1998, 'https://example.com/viticulture.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('dc9f5e5b-2f77-41e6-aa6d-8bbfe2a62a0e', 'Tzolk''in', 'Else what article cell here avoid customer beat. Blue social child catch. War price guy specific phone simply.', 2, 6, 30, 'Bailey, Norris and Poole', 1999, 'https://example.com/tzolkin.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('a8c82eb1-7f67-4181-aa95-acfd49f11304', '5-Minute Dungeon', 'Theory risk thousand which should law stop. Difficult music situation baby administration Congress think life.
-Enter recognize industry red guess chance weight travel. Sign kid him education.', 1, 6, 60, 'Rios LLC', 2000, 'https://example.com/5-minute_dungeon.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('dca5e3a9-97b7-4429-8360-7dd7c97a54b6', 'Hanabi', 'Couple occur value left them reduce nation.
-Stage chance candidate under class develop measure. Election enjoy occur. Clear school hot law strong sell then.', 1, 5, 60, 'Ellis-Taylor', 2020, 'https://example.com/hanabi.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('771ea99f-6730-4b1e-bfc3-ad7eaae30bce', 'Takenoko', 'Design my rock believe plan. Time else walk risk product. Process from although economic goal.
-Will off shoulder include when everybody. Interest four majority response.', 2, 5, 120, 'Washington-Stewart', 2017, 'https://example.com/takenoko.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('58ae31ca-4833-4ccf-9ab8-8f820f24503c', 'Flash Point', 'Industry writer although. Perhaps challenge particularly stay soldier expect.', 2, 5, 120, 'Mcdonald, Wagner and Reynolds', 2012, 'https://example.com/flash_point.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('8ebcccdf-6bf4-4bca-9b2d-fa1c482aa56d', 'Onitama', 'Instead office too physical goal. Age election history small value expect film. Far national today watch cultural.', 1, 4, 90, 'Vargas Inc', 2020, 'https://example.com/onitama.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('b79b279c-162e-4bed-b8b7-a7b9393fb5eb', 'Paladins of the West Kingdom', 'Assume when should line. Or financial option develop major parent area. Chair someone who trade best save.', 1, 5, 45, 'Parrish, Gonzalez and Hardin', 2009, 'https://example.com/paladins_of_the_west_kingdom.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('0bfc0fde-87cb-4c68-b16a-91586ca32f18', 'Project L', 'Create south occur oil national information floor. Force history choose authority church firm.', 1, 6, 45, 'Lin LLC', 2012, 'https://example.com/project_l.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('60c33560-df5e-4915-a942-fb8a862a1198', 'Meadow', 'Indicate agreement should drop professor. Half ten both player.
-Over situation gas prove. Explain protect reason adult.', 2, 6, 30, 'Molina, Evans and Hess', 2000, 'https://example.com/meadow.jpg');
-INSERT INTO games (id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url) VALUES ('a9ba4567-adfa-4fc0-9406-fc0c932834f5', 'Camel Up', 'Beautiful strategy outside paper upon moment American. List international on scene final drive to. Author reach shake point.', 2, 5, 30, 'Hernandez Ltd', 2013, 'https://example.com/camel_up.jpg');
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '8aba0cd0-5ec2-4b50-b227-aa7299faf2f6',
+             'Catan',
+             'Settle the uncharted island of Catan by gathering and trading resources to build roads, settlements, and cities. Outwit your opponents through strategic planning and negotiation to become the dominant force on the island. With ever-changing board layouts and player interactions, every game is a unique adventure.',
+             1,
+             6,
+             90,
+             'Page LLC',
+             2017,
+             'https://example.com/catan.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '4c0c7e6b-d6d8-4c42-a9a4-637417e7074e',
+             'Carcassonne',
+             'Build a medieval landscape by strategically placing tiles to create cities, roads, and monasteries. Deploy your followers as knights, monks, or farmers to score points and control territories. Each game unfolds into a rich tapestry of strategic territory control.',
+             2,
+             6,
+             45,
+             'Wiley, Wright and Jones',
+             2024,
+             'https://example.com/carcassonne.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '0baf8b14-51e1-4227-b86d-5bc07c9c55f6',
+             '7 Wonders',
+             'Lead one of the great ancient cities and develop your civilization across three ages by building structures, advancing scientific discoveries, and forging military might. Strategic card drafting and resource management play a vital role as you compete to construct your Wonder and leave a lasting legacy. With simultaneous turns and deep tactical choices, 7 Wonders offers a rich experience in under an hour.',
+             1,
+             4,
+             90,
+             'Baker PLC',
+             2012,
+             'https://example.com/7_wonders.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '782c8942-2d62-44a7-a2d1-08525684783c',
+             'Ticket to Ride',
+             'Collect train cards and claim railway routes across North America to complete destination tickets and earn points. Plan your journey wisely, block opponents, and connect cities as you race to build the most extensive rail network. Elegant rules and tense decisions make this a beloved classic for families and strategists alike.',
+             2,
+             4,
+             120,
+             'Lam-Morales',
+             2019,
+             'https://example.com/ticket_to_ride.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '69ac088b-7d9e-4364-b094-ffc3af30c125',
+             'Dominion',
+             'Build a powerful deck of action, treasure, and victory cards as you compete to control a growing kingdom. Every game presents a unique set of available cards, encouraging new strategies and combinations. Dominion pioneered the deck-building genre with fast-paced play and deep replayability.',
+             1,
+             6,
+             30,
+             'Burgess-Henderson',
+             1995,
+             'https://example.com/dominion.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '774700cb-a3ac-4ecb-bb70-a662e4b4368a',
+             'Pandemic',
+             'Work together as a team of specialists to stop the outbreak of deadly diseases around the globe. Travel the world, treat infections, and find cures before time runs out. With cooperative gameplay and high tension, Pandemic challenges players to save humanity.',
+             2,
+             6,
+             60,
+             'Cohen, Brown and Chan',
+             2010,
+             'https://example.com/pandemic.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '8834d871-5ee7-4c23-a48d-4e99e84f131d',
+             'Gloomhaven',
+             'Embark on a sprawling campaign in a dark fantasy world where players take on the roles of mercenaries with unique abilities. Tactical combat, branching storylines, and character progression create a rich, legacy-style experience. Each decision influences the evolving world, making every campaign distinct and memorable.',
+             1,
+             5,
+             60,
+             'Smith, Russell and Smith',
+             2019,
+             'https://example.com/gloomhaven.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '779c9d95-ed98-4f89-a04a-c4b28a96c487',
+             'Wingspan',
+             'Play as bird enthusiasts developing wildlife preserves to attract the best birds across habitats. Each bird extends a chain of powerful combinations in your engine-building strategy. With beautiful artwork and educational value, Wingspan is both relaxing and deeply strategic.',
+             1,
+             4,
+             60,
+             'Williams and Sons',
+             1995,
+             'https://example.com/wingspan.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'a17a2ecd-e3bf-424e-8b96-97cda76f6b21',
+             'Azul',
+             'Take on the role of a tile-laying artist decorating the royal palace of Evora. Draft colorful tiles and place them strategically to score points based on patterns and sets. Azul blends simple rules with deep tactics and beautiful components for an elegant abstract experience.',
+             2,
+             6,
+             45,
+             'Estes Inc',
+             2001,
+             'https://example.com/azul.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '71eb8d1e-87a7-403a-a567-b77ad63b139f',
+             'Splendor',
+             'Take on the role of a Renaissance merchant acquiring mines, transportation, and artisans to create a thriving gem empire. Collect chips and cards to build your tableau and attract noble patrons. Splendor is a fast-paced, elegant engine-builder with simple rules and deep strategy.',
+             1,
+             6,
+             30,
+             'Sanders-Delacruz',
+             2023,
+             'https://example.com/splendor.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'f3b9670b-a56c-4f43-9f31-d819f298973b',
+             'Root',
+             'Command asymmetric animal factions vying for control of a vast woodland in a war of strategy and diplomacy. Each faction has its own unique mechanics and goals, making for rich interactions and deep replayability. Root blends charming artwork with a tense struggle for dominance in a living world.',
+             2,
+             5,
+             120,
+             'Johnson-Fuller',
+             2011,
+             'https://example.com/root.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '840b898b-a88b-4b58-9b17-6f4ca13c59b6',
+             'Ark Nova',
+             'Design and manage a modern zoo focused on animal conservation and scientific advancement. Use action selection and card synergy to build enclosures, support conservation projects, and attract visitors. Ark Nova offers deep strategic gameplay with a rich blend of mechanics and thematic immersion.',
+             2,
+             5,
+             90,
+             'Fuentes, Miller and Wood',
+             2014,
+             'https://example.com/ark_nova.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '2629c56c-b011-479a-baa0-9a48b335d91c',
+             'Everdell',
+             'Build a thriving woodland city in a charming valley beneath the Ever Tree. Deploy critter workers, construct buildings, and prepare for the changing seasons in this beautiful worker placement and tableau-building game. Everdell features stunning art and a cozy yet strategic gameplay experience.',
+             1,
+             4,
+             90,
+             'Moore, Ward and Johnson',
+             2014,
+             'https://example.com/everdell.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '760c629d-11ee-445b-81e3-8c87f8d0e6c6',
+             'The Crew',
+             'Embark on a cooperative trick-taking adventure through space with over 50 missions to complete. Each round challenges players to silently coordinate their efforts and complete specific objectives. The Crew offers a fresh take on classic card mechanics with a compelling story-driven campaign.',
+             2,
+             5,
+             30,
+             'Rodriguez Group',
+             2024,
+             'https://example.com/the_crew.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '9edcb005-d2b1-4719-850f-e8066a4017f3',
+             'Patchwork',
+             'Compete to build the most aesthetic and high-scoring quilt on a personal board using Tetris-like fabric pieces. Manage time and buttons, your currency, to carefully plan out patch placements. Patchwork is a quick, clever, and colorful two-player strategy game.',
+             2,
+             6,
+             90,
+             'Kirby, Barnett and Morales',
+             2004,
+             'https://example.com/patchwork.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '31d67f68-5550-4d5f-9e36-333f1334fd48',
+             'Galaxy Trucker',
+             'Assemble a spaceship from sewer pipes in real time and race it across a hazardous galaxy full of asteroids, pirates, and unexpected events. Quick thinking, adaptability, and a bit of luck are key to delivering your cargo and arriving in one piece. Galaxy Trucker is chaotic, fast-paced, and full of hilarious mishaps.',
+             1,
+             6,
+             45,
+             'Morgan Group',
+             2018,
+             'https://example.com/galaxy_trucker.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'afa64ae4-a49e-4cdc-abc8-6cee7b674864',
+             'The Resistance',
+             'A game of secret identities, deduction, and deception as players take on roles of rebels and spies. Work together to complete missions—unless you''re a spy working to sabotage them. The Resistance thrives on bluffing, logic, and social manipulation, making every round intense.',
+             1,
+             4,
+             90,
+             'Reyes, Wiggins and Allen',
+             2018,
+             'https://example.com/the_resistance.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '5f0e793e-92ed-41ab-b120-6570a49d7679',
+             'Twilight Struggle',
+             'Relive the Cold War as the USA and USSR in this two-player strategy game of influence and historical events. Balance military power, space race, and political maneuvering across global regions. Twilight Struggle blends card-driven strategy and tension with rich historical depth.',
+             1,
+             4,
+             30,
+             'Hayes Ltd',
+             2007,
+             'https://example.com/twilight_struggle.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'fbf3d1b9-0958-4292-80d2-385539ff62a7',
+             'Love Letter',
+             'Compete to deliver your love letter to the princess by enlisting the help of court members with special abilities. Use deduction, risk, and a bit of luck to eliminate rivals and be closest to her heart. Love Letter is a compact, quick, and engaging game of bluffing and strategy.',
+             2,
+             5,
+             90,
+             'Mcneil LLC',
+             2000,
+             'https://example.com/love_letter.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'f55c648a-1a52-4de9-9e6f-34fe19435a24',
+             'Blood Rage',
+             'Enter the world of Norse mythology where Viking clans battle for glory before Ragnarok. Draft cards, upgrade your warriors, and engage in area control to earn honor in combat. Blood Rage is a dynamic and visually striking game of strategic conquest and timing.',
+             1,
+             6,
+             90,
+             'Costa Inc',
+             2005,
+             'https://example.com/blood_rage.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '3e33cf9d-d5fc-468e-9128-035d486d6e2d',
+             'Lost Ruins of Arnak',
+             'Explore a mysterious island full of forgotten ruins and ancient secrets in this hybrid of deck-building and worker placement. Research lost knowledge, fight guardians, and uncover powerful artifacts. Lost Ruins of Arnak offers rich strategy and exploration in a beautifully illustrated world.',
+             2,
+             4,
+             30,
+             'Robinson-Garcia',
+             2020,
+             'https://example.com/lost_ruins_of_arnak.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'bdf4adc5-43dc-4278-bd88-1dc72daa2468',
+             'Isle of Skye',
+             'Build your kingdom by bidding on and placing landscape tiles in this strategic tile-laying game. Each round brings new scoring rules, making timing and valuation crucial to success. Isle of Skye combines auction mechanics with spatial puzzle solving for a dynamic experience.',
+             2,
+             6,
+             90,
+             'Bowman-Pacheco',
+             2011,
+             'https://example.com/isle_of_skye.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'b05fc5ad-8eb5-4125-8dbf-d85047a6e7db',
+             'Kingdomino',
+             'Expand your kingdom by connecting colorful domino-like tiles with matching terrain. Choose carefully from the available tiles each round to maximize scoring while denying your opponents. Kingdomino is a fast, family-friendly game that rewards smart spatial planning.',
+             1,
+             5,
+             60,
+             'Mccann, Russell and Doyle',
+             2023,
+             'https://example.com/kingdomino.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '9052a9d5-d3e7-40ad-8202-580ebd166e85',
+             'Brass: Birmingham',
+             'Develop industries, build networks, and navigate the economic shifts of the Industrial Revolution in England. Balance coal, iron, and beer resources to grow your empire through canals and railways. Brass: Birmingham delivers deep strategic play with a rich economic engine and high replayability.',
+             2,
+             6,
+             90,
+             'Hall-Lynch',
+             2016,
+             'https://example.com/brass:_birmingham.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '4f86932e-e982-4cd2-bf1b-8e48bd0b3654',
+             'Agricola',
+             'Take on the role of a farmer managing crops, livestock, and family in 17th-century Europe. Balance food production and expansion while improving your homestead through careful worker placement. Agricola offers deep strategic decisions with high replayability and challenge.',
+             2,
+             4,
+             90,
+             'Fleming PLC',
+             1999,
+             'https://example.com/agricola.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '7275fbb0-0f64-483a-89c5-3f7ef1f6aef5',
+             'Codenames',
+             'Two teams compete to contact all their secret agents using one-word clues linked to multiple code words. Avoid the deadly assassin and decipher your teammate’s hints while staying ahead of the rival team. Codenames is a quick, clever party game that rewards creativity and deduction.',
+             1,
+             6,
+             45,
+             'Rush, Morris and Davis',
+             2009,
+             'https://example.com/codenames.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '965e9707-71e1-4e3f-b7da-3133d051aeac',
+             'Terraforming Mars',
+             'Lead a corporation in the 2400s working to make Mars habitable by raising oxygen levels, creating oceans, and increasing temperature. Play project cards, manage resources, and build infrastructure to gain points and reshape the planet. Terraforming Mars combines strategy, science, and engine-building in a race to colonize the red planet.',
+             2,
+             5,
+             45,
+             'Martinez, Mcdowell and Contreras',
+             2023,
+             'https://example.com/terraforming_mars.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '0ad786b0-7cc0-43ec-944e-1f463704b83a',
+             'Scythe',
+             'Set in an alternate-history 1920s, Scythe is a game of economic development, territory control, and powerful mechs. Expand your faction’s influence by producing resources, deploying mechs, and building infrastructure. Scythe offers asymmetric gameplay with deep strategy and stunning artwork in a rich dieselpunk world.',
+             2,
+             5,
+             60,
+             'Walton-Schaefer',
+             2005,
+             'https://example.com/scythe.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'a215cf6d-fe70-4bb2-89d5-6cc444f32db4',
+             'The Mind',
+             'In The Mind, players must silently cooperate to play cards in ascending order—without speaking or signaling. It’s a minimalist yet intense game that tests intuition, timing, and teamwork. Simple in concept but thrilling in execution, The Mind is a true test of mental connection.',
+             2,
+             6,
+             60,
+             'Powell-Gardner',
+             2009,
+             'https://example.com/the_mind.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '07563c9a-3fca-46b2-a018-e3af05c9e4de',
+             'Jaipur',
+             'As a trader in the city of Jaipur, you must outwit your opponent to become the Maharaja’s personal merchant. Trade goods, manage camels, and plan your moves carefully in this fast-paced card game for two. Jaipur blends tactics and luck in a quick, elegant duel of commerce.',
+             1,
+             4,
+             90,
+             'Walls-Gonzalez',
+             1996,
+             'https://example.com/jaipur.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'a0044329-740e-4bf2-852d-e98a2e524684',
+             'Calico',
+             'Design a cozy quilt by placing colorful fabric patches while trying to attract adorable cats and match patterns. Each decision is a tight puzzle of color, pattern, and placement with a relaxing aesthetic. Calico blends spatial strategy and satisfying combos in a beautiful, tactile experience.',
+             1,
+             5,
+             120,
+             'Mcdowell Ltd',
+             1998,
+             'https://example.com/calico.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '69026efa-dddd-408a-9ddf-cbd185b9b39d',
+             'Quacks of Quedlinburg',
+             'Brew potions using a push-your-luck mechanic by drawing ingredients from your bag, hoping not to make it explode. Each round adds new ingredients and powers, creating chaotic and rewarding combos. Quacks is vibrant, fast-paced, and full of explosive tension and laughs.',
+             2,
+             5,
+             90,
+             'Peck LLC',
+             2009,
+             'https://example.com/quacks_of_quedlinburg.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '07011961-83b3-4e78-ac5a-a820f3963f44',
+             'Clank!',
+             'Delve into a dungeon to steal treasure while avoiding the dragon’s wrath in this deck-building adventure game. Build your deck, sneak past monsters, and get out before the noise you make (clank!) brings danger. Clank! mixes excitement and risk-taking with clever engine-building in a fantasy heist.',
+             2,
+             4,
+             45,
+             'Ramirez-Moore',
+             2001,
+             'https://example.com/clank!.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '272873b6-7253-4e3e-adbf-1dc22a6fcbf4',
+             'Great Western Trail',
+             'Drive your cattle from Texas to Kansas City, managing your herd, navigating hazards, and upgrading your path along the way. Employ cowboys, craftsmen, and engineers to optimize your strategy and score big in the railroad network. Great Western Trail offers deep planning, tactical movement, and deck management in a unique Western setting.',
+             2,
+             6,
+             90,
+             'Lopez Inc',
+             2002,
+             'https://example.com/great_western_trail.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'd8df204d-f0f1-414b-9d25-2a39a253dfaf',
+             'Barrage',
+             'Build dams, manage water flow, and construct power-generating infrastructure in a cutthroat industrial economy. Barrage combines tight worker placement and resource management with a unique rotating wheel mechanic. Strategic and unforgiving, it challenges players to optimize while disrupting opponents'' plans.',
+             1,
+             5,
+             45,
+             'Wallace, Anthony and Gonzales',
+             2001,
+             'https://example.com/barrage.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '27f69719-060a-4baf-b5e6-1bf538584193',
+             'Chronicles of Crime',
+             'Step into the shoes of a detective solving modern crimes using virtual reality and app integration. Investigate scenes, interrogate suspects, and analyze evidence in branching narrative cases. Chronicles of Crime is an immersive blend of storytelling, deduction, and technology-enhanced play.',
+             1,
+             4,
+             60,
+             'Hurley, Cox and Smith',
+             2011,
+             'https://example.com/chronicles_of_crime.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '34a5382d-c012-4372-8322-b0c83cb3ebb9',
+             'Cartographers',
+             'Sketch maps of fantasy lands in this roll-and-write game where players fill in a grid with terrain to earn points. Each season introduces new scoring objectives and monster ambushes. Cartographers rewards planning, adaptability, and spatial awareness with satisfying creativity.',
+             2,
+             6,
+             60,
+             'Velasquez-Lowe',
+             2018,
+             'https://example.com/cartographers.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'f4340ac9-3b44-4bd8-9bf6-59b9b11e35a5',
+             'Tiny Towns',
+             'Construct a thriving town on a tiny 4x4 grid using resource cubes placed in specific patterns. Every building requires precise planning and efficient use of limited space. Tiny Towns is a clever puzzle game of spatial optimization and long-term planning.',
+             2,
+             5,
+             90,
+             'Fisher Inc',
+             2013,
+             'https://example.com/tiny_towns.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'af3d7f66-771c-42e9-87ff-48adea962f70',
+             'Obsession',
+             'Manage an English estate in Victorian times, hosting events, courting suitors, and managing servants. Balance reputation, wealth, and guest invitations in a thematic mix of worker placement and tableau-building. Obsession immerses players in historical charm and strategic domestic development.',
+             1,
+             6,
+             60,
+             'Vaughn-Torres',
+             2021,
+             'https://example.com/obsession.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '004ee136-a3ff-4f53-b89e-24311a65651a',
+             'Viticulture',
+             'Run a vineyard in Tuscany by planting vines, harvesting grapes, and producing wine to fulfill orders. Use your workers wisely throughout the seasons and upgrade your estate for strategic advantages. Viticulture is a thematic worker placement game filled with charm and tactical depth.',
+             1,
+             4,
+             45,
+             'Wilson-Reynolds',
+             1998,
+             'https://example.com/viticulture.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'dc9f5e5b-2f77-41e6-aa6d-8bbfe2a62a0e',
+             'Tzolk''in',
+             'Harness the power of the Mayan calendar in this unique worker placement game with rotating gears. Timing is key as workers increase in value the longer they stay on the board. Tzolk’in offers deep planning, resource management, and a visually stunning experience.',
+             2,
+             6,
+             30,
+             'Bailey, Norris and Poole',
+             1999,
+             'https://example.com/tzolkin.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'a8c82eb1-7f67-4181-aa95-acfd49f11304',
+             '5-Minute Dungeon',
+             'Team up to conquer a series of dungeon rooms in just five minutes using fast-paced card play and cooperation. Each player uses a unique hero deck to overcome obstacles and defeat bosses. 5-Minute Dungeon is frantic, fun, and perfect for quick bursts of chaotic action.',
+             1,
+             6,
+             60,
+             'Rios LLC',
+             2000,
+             'https://example.com/5-minute_dungeon.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'dca5e3a9-97b7-4429-8360-7dd7c97a54b6',
+             'Hanabi',
+             'Work together to create a perfect fireworks display by playing cards in the correct order. The twist? You can see everyone’s cards except your own, and must rely on limited clues. Hanabi is a cooperative game of logic, memory, and subtle communication.',
+             1,
+             5,
+             60,
+             'Ellis-Taylor',
+             2020,
+             'https://example.com/hanabi.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '771ea99f-6730-4b1e-bfc3-ad7eaae30bce',
+             'Takenoko',
+             'Tend to a bamboo garden and care for a hungry panda gifted to you by the Emperor of Japan. Manage plots, grow bamboo, and feed the panda while completing objectives. Takenoko is a charming game that blends light strategy with delightful visuals.',
+             2,
+             5,
+             120,
+             'Washington-Stewart',
+             2017,
+             'https://example.com/takenoko.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '58ae31ca-4833-4ccf-9ab8-8f820f24503c',
+             'Flash Point',
+             'Join a team of firefighters as you race against time to rescue victims and extinguish flames. Each player has a unique role and must coordinate with others to survive emergencies. Flash Point is an intense cooperative game with real-time danger and heroism.',
+             2,
+             5,
+             120,
+             'Mcdonald, Wagner and Reynolds',
+             2012,
+             'https://example.com/flash_point.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '8ebcccdf-6bf4-4bca-9b2d-fa1c482aa56d',
+             'Onitama',
+             'Onitama is a fast-paced abstract strategy game that blends chess-like movement with ever-changing tactics. Each game uses a limited set of movement cards, making every match a unique puzzle. With elegant mechanics and minimal components, it''s perfect for quick duels of wits.',
+             1,
+             4,
+             90,
+             'Vargas Inc',
+             2020,
+             'https://example.com/onitama.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'b79b279c-162e-4bed-b8b7-a7b9393fb5eb',
+             'Paladins of the West Kingdom',
+             'Defend the kingdom from external threats while building fortifications and spreading faith. Recruit paladins, assign workers, and balance your strength, faith, and influence in this strategic eurogame. Paladins rewards long-term planning and engine-building in a rich medieval setting.',
+             1,
+             5,
+             45,
+             'Parrish, Gonzalez and Hardin',
+             2009,
+             'https://example.com/paladins_of_the_west_kingdom.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '0bfc0fde-87cb-4c68-b16a-91586ca32f18',
+             'Project L',
+             'Use brightly colored puzzle pieces to complete increasingly complex shapes in this satisfying engine-building game. Upgrade your actions, collect more pieces, and optimize your puzzle-solving strategy. Project L blends minimalist design with tactical depth and visual appeal.',
+             1,
+             6,
+             45,
+             'Lin LLC',
+             2012,
+             'https://example.com/project_l.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             '60c33560-df5e-4915-a942-fb8a862a1198',
+             'Meadow',
+             'Explore nature and collect beautiful illustrations of flora and fauna to build your personal tableau. Strategically choose cards from the display and fulfill conditions to earn points and unlock new discoveries. Meadow is a serene, visually stunning game that rewards thoughtful planning and exploration.',
+             2,
+             6,
+             30,
+             'Molina, Evans and Hess',
+             2000,
+             'https://example.com/meadow.jpg',
+             CURRENT_TIMESTAMP
+         );
+
+INSERT INTO games (
+    id, title, description, min_players, max_players, playtime_minutes, publisher, year_published, image_url, created_at
+) VALUES (
+             'a9ba4567-adfa-4fc0-9406-fc0c932834f5',
+             'Camel Up',
+             'Bet on racing camels that move in unpredictable ways across a stacked-track desert course. Place bets, manipulate movement, and outguess your opponents to win the most money. Camel Up is chaotic, hilarious, and a crowd-pleaser perfect for groups and families.',
+             2,
+             5,
+             30,
+             'Hernandez Ltd',
+             2013,
+             'https://example.com/camel_up.jpg',
+             CURRENT_TIMESTAMP
+         );
+
 
 -- GAME CATEGORIES
 INSERT INTO game_category (game_id, category_id) VALUES ('8aba0cd0-5ec2-4b50-b227-aa7299faf2f6', 10);

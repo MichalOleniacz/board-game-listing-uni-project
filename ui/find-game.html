@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Find Game</title>
+    <link rel="stylesheet" href="find-game.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+</head>
+<body>
+<header class="pageHeader">
+    <img class="logo" src="assets/logo_small.png" alt="Boardsy logo" />
+    <img class="menuIcon" src="assets/menu.svg" alt="Menu icon" />
+</header>
+<aside>
+    <nav class="hamburgerMenu" id="hamburgerMenu">
+        <ul>
+            <li><a href="/home">Home</a></li>
+            <li><a href="/ranking">Ranking</a></li>
+            <li><a href="/my-reviews">My Reviews</a></li>
+            <li><a href="/find-game">Find game</a></li>
+            <li><a href="/logout">Log out</a></li>
+        </ul>
+    </nav>
+</aside>
+<div id="menuOverlay" class="menuOverlay"></div>
+
+<main class="searchContainer">
+    <h1>Find a game</h1>
+    <input id="searchInput" class="formField" placeholder="Search by title or description..." />
+
+    <section class="gamesList" id="searchResults">
+        <!-- search results go here -->
+    </section>
+</main>
+
+<script type="module" src="/src/findGame.ts"></script>
+</body>
+</html>

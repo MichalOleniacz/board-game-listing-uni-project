@@ -19,9 +19,10 @@
 <aside>
     <nav class="hamburgerMenu" id="hamburgerMenu">
         <ul>
-            <li><a href="/profile">My Profile</a></li>
-            <li><a href="/preferences">Preferences</a></li>
-            <li><a href="/reviews">My Reviews</a></li>
+            <li><a href="/home">Home</a></li>
+            <li><a href="/ranking">Ranking</a></li>
+            <li><a href="/my-reviews">My Reviews</a></li>
+            <li><a href="/find-game">Find game</a></li>
             <li><a href="/logout">Log out</a></li>
         </ul>
     </nav>
@@ -79,5 +80,18 @@
         <button class="viewMoreBtn">View more</button>
     </section>
 </main>
+<div class="modalOverlay hidden" id="preferenceModal">
+    <div class="modalCard">
+        <h2>Add a Preference</h2>
+        <select id="preferenceSelect" class="formField">
+            <option value="">Select category...</option>
+        </select>
+
+        <div class="formActions">
+            <button class="formSubmitBtnWithIcon" id="savePreferenceBtn">Save</button>
+            <button class="deleteBtn" id="cancelPreferenceBtn">Cancel</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

@@ -36,7 +36,7 @@ export default class AdminPanelManager {
         this.bindUserSection();
         this.bindGameSection();
         this.bindAddGameSection();
-        this.bindReviewSection();
+        this.bindMakeAdminSection();
     }
 
     private bindUserSection(): void {
@@ -118,7 +118,7 @@ export default class AdminPanelManager {
         });
 
         saveBtn.addEventListener('click', async () => {
-            const res = await this.httpClient.post('/admin/update-game', {
+            const res = await this.httpClient.post('/admin/game/update-game', {
                 id: gameId,
                 title: title.value,
                 description: desc.value,
@@ -134,7 +134,7 @@ export default class AdminPanelManager {
         });
 
         deleteBtn.addEventListener('click', async () => {
-            const res = await this.httpClient.post('/admin/delete-game', { id: gameId });
+            const res = await this.httpClient.post(`/admin/game/delete-game?id=${encodeURIComponent(gameId)}`, {});
             alert(res.isOk() ? 'Game deleted' : 'Failed to delete game');
             container.classList.add('hidden');
         });
@@ -152,7 +152,7 @@ export default class AdminPanelManager {
         const addBtn = document.getElementById('addGameBtn')!;
 
         addBtn.addEventListener('click', async () => {
-            const res = await this.httpClient.post('/admin/add-game', {
+            const res = await this.httpClient.post('/admin/game/create-game', {
                 title: title.value,
                 description: desc.value,
                 publisher: publisher.value,
@@ -167,44 +167,20 @@ export default class AdminPanelManager {
         });
     }
 
-    private bindReviewSection(): void {
-        const userEmail = document.getElementById('reviewUserEmail') as HTMLInputElement;
-        const gameTitle = document.getElementById('reviewGameTitle') as HTMLInputElement;
-        const searchBtn = document.getElementById('searchReviewsBtn')!;
-        const resultList = document.getElementById('reviewResults')!;
+    private bindMakeAdminSection(): void {
+        const emailInput = document.getElementById('makeAdminEmail') as HTMLInputElement;
+        const makeBtn = document.getElementById('makeAdminBtn')!;
 
-        searchBtn.addEventListener('click', async () => {
-            const res = await this.httpClient.post<ReviewDto[]>('/admin/find-reviews', {
-                email: userEmail.value,
-                title: gameTitle.value
-            });
-
-            resultList.innerHTML = '';
-
-            if (res.isErr()) {
-                alert('Failed to fetch reviews');
+        makeBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            if (!email) {
+                alert('Please enter an email address');
                 return;
             }
 
-            const reviews = res.unwrap();
-            reviews.forEach(review => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-          <span><strong>${review.gameTitle}</strong>: ${review.comment}</span>
-          <button data-id="${review.id}">Delete</button>
-        `;
+            const res = await this.httpClient.post('/admin/user/make-user-admin', { email });
 
-                li.querySelector('button')!.addEventListener('click', async () => {
-                    const delRes = await this.httpClient.post('/admin/delete-review', { id: review.id });
-                    if (delRes.isOk()) {
-                        li.remove();
-                    } else {
-                        alert('Failed to delete review');
-                    }
-                });
-
-                resultList.appendChild(li);
-            });
+            alert(res.isOk() ? 'User promoted to admin!' : 'Failed to promote user');
         });
     }
 }

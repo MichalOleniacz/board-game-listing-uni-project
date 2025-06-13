@@ -5,6 +5,7 @@ import org.michaloleniacz.project.persistance.core.PaginatedResult;
 import org.michaloleniacz.project.persistance.domain.UserRepository;
 import org.michaloleniacz.project.shared.dto.UserDto;
 import org.michaloleniacz.project.user.User;
+import org.michaloleniacz.project.user.dto.UserDetailsDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,11 @@ public class MemoryUserRepositoryImpl implements UserRepository {
     @Override
     public Optional<User> findFullUserByEmail(String email) {
         return Optional.empty();
+    }
+
+    @Override
+    public boolean addTransactional(User entity) {
+        return false;
     }
 
     @Override
@@ -54,5 +60,14 @@ public class MemoryUserRepositoryImpl implements UserRepository {
     @Override
     public boolean deleteById(UUID uuid) {
         return false;
+    }
+
+    @Override
+    public Optional<UserDetailsDto> getUserDetails(UUID uuid) {
+        return Optional.empty();
+    }
+
+    public void updateUserDetails(UUID id, UserDetailsDto dto) {
+
     }
 }

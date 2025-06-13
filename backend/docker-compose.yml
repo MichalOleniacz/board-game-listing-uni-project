@@ -38,18 +38,6 @@ services:
     profiles:
       - db
 
-  adminer:
-    container_name: boardgamehub-core-db-adminer
-    image: adminer
-    restart: always
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - postgres
-    ports:
-      - 8081:8080
-
   backend:
     build: .
     container_name: boardgamehub-backend

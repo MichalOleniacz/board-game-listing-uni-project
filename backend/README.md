@@ -1,96 +1,84 @@
 # BoardGameHub Backend
 
-A backend service for board game lovers to review, rate, and explore games — built from scratch with pure Java, no frameworks, and a modular, production-grade architecture.
+A backend service for board game lovers to review, rate, and explore games — built from scratch in **pure Java**, with no frameworks or third-party libraries. The goal is to demonstrate deep understanding of architecture, design patterns, and production-quality backend design.
 
 ---
 
 ## Project Overview
 
-BoardGameHub is a platform that allows users to:
-- Browse and review board games
-- View and filter game rankings
-- Search for rental locations (libraries, stores)
-- Authenticate and manage user sessions
-- Use an admin dashboard to view KPIs and moderate content
+BoardGameHub enables users to:
 
-This project is built entirely **without frameworks or libraries** (e.g., no Spring, no Jackson, etc.) to demonstrate a strong grasp of core Java, clean architecture, and design patterns.
+- Browse and filter board game listings
+- Submit and read reviews
+- View ranking pages (filterable by category and location)
+- Register, log in, and manage user sessions
+- Moderate users and content through an admin dashboard
+
+Built to enforce modularity, testability, and real-world scalability.
 
 ---
 
-## Architecture Highlights
+## Architectural Patterns
 
-- **HTTP Server**: Built using `com.sun.net.httpserver.HttpServer`
-- **Routing System**: Custom DSL with middleware and method-based routing
-- **Design Patterns**: Strategy, Singleton, Decorator, Template Method
-- **Modular Structure**: Layered architecture evolving into hexagonal (Ports & Adapters)
-- **Config**: Properties-based config loading with optional Docker overrides
-- **Persistence (upcoming)**: PostgreSQL via JDBC with pluggable repository interfaces
-- **Testing**: JUnit 5 with full unit test coverage of core modules
-- **Dockerized Services**: Compose-ready for PostgreSQL, Adminer, and the backend app
+- **Layered architecture** (HTTP, middleware, controller, service, persistence)
+- **MVC** structure with RESTful routes
+- **Domain-Driven Design-inspired structure**
+- **ComponentRegistry-based dependency injection**
+- **Configurable persistence layer using strategy + factory patterns**
+- **Stateless, pluggable middleware pipeline**
+
+---
+
+## GoF Design Patterns Used
+
+| Pattern         | Where                                                   |
+|----------------|---------------------------------------------------------|
+| Singleton       | `AppConfig`, `ComponentRegistry`, `HttpServerSingleton` |
+| Builder         | `ResponseContext`, `RouteBuilder`                       |
+| Strategy        | `PasswordHasherStrategy`, `Repositories`                |
+| Factory Method  | `RepositoryFactory`, `JsonMapper.mapToRecord(...)`      |
+| Adapter         | `JdbcPostgresAdapter`, `RedisClient`                    |
+| Decorator       | Middleware chaining                                     |
+| Template Method | Middleware design structure                             |
 
 ---
 
 ## System Requirements
 
-- **Java 21** or newer
+- **Java 21**
 - **Maven 3.9+**
-- **Docker & Docker Compose** (for database and full-stack runs)
+- **Docker** and **Docker Compose**
 
 ---
 
 ## Local Development Setup
 
-### 1. Clone the repository
+### 1. Clone and Navigate
 
 ```bash
 git clone https://github.com/your-org/boardgamehub-backend.git
 cd boardgamehub-backend
 ```
 
-### 2. Run Postgres + Adminer via Docker
+### 2. Start Database + Adminer
 
 ```bash
 docker-compose up -d
 ```
 
-> This starts:
-> - PostgreSQL at `localhost:5432`
-> - Adminer at `http://localhost:8081`
+- PostgreSQL → `localhost:5432`
+- Adminer UI → `http://localhost:8081`
 
-### 3. Run the backend app locally
-
-- In IntelliJ or your IDE, run the `Main` class.
-- Or from terminal:
+### 3. Run Backend in IDE or CLI
 
 ```bash
-mvn compile exec:java
+mvn clean compile exec:java
 ```
 
----
-
-## Full Stack via Docker
-
-If you want to run **the app + services** fully in Docker:
+Or use Docker:
 
 ```bash
-docker-compose --profile full up --build
-```
-
-App is then available at `http://localhost:8080`
-
----
-
-## Configuration
-
-All configuration is loaded from `app.properties` or `/config/app.properties` (in Docker):
-
-```properties
-log.level=DEBUG
-server.port=8080
-
-db.url=jdbc:postgresql://localhost:5432/boardgamehub
-db.user=postgres
-db.pass=example
+docker-compose --profile dev up --build
 ```
 
 ---
@@ -101,11 +89,30 @@ db.pass=example
 mvn test
 ```
 
-Tests cover:
-- Route resolution
-- Path param extraction
-- Middleware execution
-- Config loading
+Includes unit tests for:
+- JSON parsing and serialization
+- Request routing
+- Middleware behavior
+- Repository logic (with JDBC)
+- Config loader and logger
+
+---
+
+## Database Support
+
+- **PostgreSQL**: used via `DriverManager` + `PreparedStatement` with custom `JdbcPostgresAdapter`
+- **Redis**: optional for storing session tokens
+- **Transactions**: supported via `JdbcPostgresAdapter.transaction(...)`
+
+Example:
+
+```java
+adapter.transaction(conn -> {
+    UUID id = userRepo.add(conn, ...);
+    sessionRepo.save(conn, new Session(...));
+    return id;
+});
+```
 
 ---
 
@@ -113,25 +120,118 @@ Tests cover:
 
 ```
 src/
-├── main/java/backend/
-│   ├── http/               # HTTP server, router, dispatcher
-│   ├── controller/         # Ping, Auth, Admin
-│   ├── service/            # Business logic
-│   ├── repository/         # Interfaces for persistence
-│   ├── infra/postgres/     # JDBC implementations
-│   ├── util/               # Logger, config, etc.
-│   └── Main.java           # Entry point
-└── test/java/backend/      # Unit tests
+├── main/java/org/michaloleniacz/project/
+│   ├── http/               → Core routing, request/response, dispatcher
+│   ├── middlewares/        → Auth, CORS, Logger, ErrorBoundary, RequestId
+│   ├── controller/         → AuthController, GameController, PingController
+│   ├── service/            → Business logic classes
+│   ├── model/              → DTOs and domain objects
+│   ├── persistence/        
+│   │   ├── core/           → Jdbc adapter, SQL helpers
+│   │   ├── impl/           → Postgres-backed repo impls
+│   │   ├── domain/         → Repository interfaces
+│   │   └── factory/        → RepositoryFactory with strategy selection
+│   ├── util/               → Logger, AppConfig, JsonUtil, JsonMapper
+│   └── Main.java           → Entry point and bootstrap
+└── test/                   → Unit tests
 ```
 
 ---
 
-## 📚 Roadmap (Upcoming Features)
+## Configuration
 
-- [ ] User registration and login
-- [ ] Session management (with Redis support)
-- [ ] Game listings and reviews
-- [ ] Admin dashboard with KPIs
-- [ ] Role-based access control
-- [ ] Full hexagonal refactor (ports/adapters)
-- [ ] JSON body parsing
+Your `application.properties` file defines all config:
+
+```properties
+log.level=DEBUG
+server.port=8080
+
+db.url=jdbc:postgresql://localhost:5432/boardgamehub
+db.user=postgres
+db.password=example
+
+session.backend=redis
+redis.host=localhost
+redis.port=6379
+
+cors.origin=http://localhost:5173
+```
+
+---
+
+## Authentication & Sessions
+
+- Session-based login
+- Cookie stored securely via `Set-Cookie`
+- Pluggable session repo: `InMemory` or `Redis`
+- RBAC with role-checking middleware (`requireAuthenticated()`, `requireRole(...)`)
+- Login/registration includes hashing (e.g., `SHA256PasswordHasher`)
+
+---
+
+## JSON Support
+
+Custom reflection-based system:
+
+- `JsonUtil.toJson(...)` → handles records, lists, maps, primitives
+- Supports: `String`, `int`, `UUID`, `Instant`, `Date`, `AuthRole`, `ArrayList<Integer>`, etc.
+- `JsonMapper.mapToRecord(...)` → converts `Map<String, Object>` to a record
+- Handles nested DTOs, `PaginatedResult<T>`, and validation errors
+
+Example:
+
+```java
+ctx.response().json(new PaginatedResult<>(list, 10, 0, 1)).send();
+```
+
+---
+
+## CORS
+
+Via `CorsMiddleware`, which:
+
+- Responds to preflight `OPTIONS` requests
+- Injects `Access-Control-Allow-Origin`, etc.
+- Honors the origin configured in properties
+
+---
+
+## Dependency Injection
+
+Use the `ComponentRegistry` for wiring:
+
+```java
+ComponentRegistry.register(UserService.class, new UserService(...));
+var service = ComponentRegistry.get(UserService.class);
+```
+
+No framework — just clean, explicit control.
+
+---
+
+## Admin & Dashboard
+
+Supports:
+
+- Moderate users, reviews, games
+- Role-based access for `/admin/*` routes
+
+---
+
+## Roadmap
+
+- [x] Pluggable password hashing
+- [x] Repository strategy pattern
+- [x] Paginated DTOs
+- [x] Session middleware
+- [x] Global error handling
+- [x] CORS + cookies
+- [x] Redis integration
+- [x] Transactional flow
+- [ ] OpenAPI spec or HTML route index
+
+---
+
+## 📜 License
+
+MIT — for educational and demonstration use.

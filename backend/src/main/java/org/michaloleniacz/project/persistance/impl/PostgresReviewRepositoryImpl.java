@@ -47,10 +47,13 @@ public class PostgresReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public void deleteUserReviewById(int reviewId) {
+    public void deleteUserReviewById(int reviewId, UUID userId) {
         jdbcAdapter.update(
-                "DELETE FROM reviews WHERE id = ?",
-                stmt -> stmt.setInt(1, reviewId)
+                "DELETE FROM reviews WHERE id = ? AND user_id = ?",
+                stmt ->  {
+                    stmt.setInt(1, reviewId);
+                    stmt.setObject(2, userId);
+                }
         );
     }
 

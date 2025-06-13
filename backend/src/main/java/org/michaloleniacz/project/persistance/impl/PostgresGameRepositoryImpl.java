@@ -3,6 +3,8 @@ package org.michaloleniacz.project.persistance.impl;
 import org.michaloleniacz.project.category.dto.CategoryDto;
 import org.michaloleniacz.project.game.dto.AddNewGameRequestDto;
 import org.michaloleniacz.project.game.dto.GameDto;
+import org.michaloleniacz.project.game.dto.SearchGameRequestDto;
+import org.michaloleniacz.project.game.dto.UpdateGameRequestDto;
 import org.michaloleniacz.project.persistance.core.JdbcPostgresAdapter;
 import org.michaloleniacz.project.persistance.core.PaginatedResult;
 import org.michaloleniacz.project.persistance.domain.GameRepository;
@@ -251,4 +253,55 @@ public class PostgresGameRepositoryImpl implements GameRepository {
         );
     }
 
+    @Override
+    public void update(UpdateGameRequestDto gameDto) {
+        jdbcAdapter.update(
+                "UPDATE games SET " +
+                        "title = ?, " +
+                        "description = ?, " +
+                        "min_players = ?, " +
+                        "max_players = ?, " +
+                        "playtime_minutes = ?, " +
+                        "publisher = ?, " +
+                        "year_published = ?, " +
+                        "image_url = ? " +
+                        "WHERE id = ?",
+                stmt -> {
+                    stmt.setString(1, gameDto.title());
+                    stmt.setString(2, gameDto.description());
+                    stmt.setInt(3, gameDto.minPlayers());
+                    stmt.setInt(4, gameDto.maxPlayers());
+                    stmt.setInt(5, gameDto.playtimeMinutes());
+                    stmt.setString(6, gameDto.publisher());
+                    stmt.setInt(7, gameDto.yearPublished());
+                    stmt.setString(8, gameDto.imageUrl());
+                    stmt.setObject(9, gameDto.id());
+                }
+        );
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        jdbcAdapter.update(
+                "DELETE FROM games WHERE id = ?",
+                stmt -> stmt.setObject(1, id)
+        );
+    }
+
+    @Override
+    public ArrayList<GameDto> search(SearchGameRequestDto dto) {
+        return jdbcAdapter.queryMany(
+                "SELECT\n" +
+                        "    g.*,\n" +
+                        "    AVG(r.rating) AS avg_rating,\n" +
+                        "    string_agg(DISTINCT c.category_name, ', ') AS categories\n" +
+                        "FROM search_game(?) g\n" +
+                        "    LEFT JOIN game_category gc ON g.id = gc.game_id\n" +
+                        "    LEFT JOIN categories c on gc.category_id = c.id\n" +
+                        "    LEFT JOIN reviews r on gc.game_id = r.game_id\n" +
+                        "GROUP BY g.id, g.title, g.description, g.min_players, g.max_players, g.playtime_minutes, g.publisher, g.year_published, g.image_url, g.created_at;",
+                stmt -> stmt.setString(1, dto.query()),
+                this::mapToDto
+        );
+    }
 }

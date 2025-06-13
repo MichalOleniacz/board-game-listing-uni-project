@@ -1,5 +1,6 @@
 package org.michaloleniacz.project.persistance.core;
 
+import org.michaloleniacz.project.shared.error.InternalServerErrorException;
 import org.michaloleniacz.project.util.Logger;
 
 import java.sql.*;
@@ -58,6 +59,31 @@ public class JdbcPostgresAdapter {
         } catch (SQLException e) {
             Logger.error("Failed to perform a JDBC update:\n" + e.getMessage());
             throw new RuntimeException(e);
+        }
+    }
+
+    public int updateWithConnection(Connection conn, String sql, SQLConsumer<PreparedStatement> consumer) {
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            consumer.accept(stmt);
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new InternalServerErrorException("SQL update failed: " + e.getMessage());
+        }
+    }
+
+    public <T> T transaction(SQLFunction<Connection, T> block) {
+        try (final Connection conn = DatabaseConnector.getConnection()) {
+            try {
+                conn.setAutoCommit(false);
+                T result = block.apply(conn);
+                conn.commit();
+                return result;
+            } catch (Exception e) {
+                conn.rollback();
+                throw new InternalServerErrorException("Transaction failed: " + e.getMessage());
+            }
+        } catch (SQLException e) {
+            throw new InternalServerErrorException("DB error: " + e.getMessage());
         }
     }
 }

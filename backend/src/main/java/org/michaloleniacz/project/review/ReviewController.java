@@ -23,4 +23,9 @@ public class ReviewController {
     public void addNewReview(RequestContext ctx) {
         reviewService.addNewReview(ctx);
     }
+
+    public void removeReview(RequestContext ctx) {
+        reviewService.removeReview(ctx);
+    }
+
 }
