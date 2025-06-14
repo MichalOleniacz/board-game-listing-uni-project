@@ -247,6 +247,27 @@ textarea.formField {
     right: 0;
 }
 
+.menuOverlay {
+    display: none;
+}
+
+.menuOverlay.active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.5);
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modalOverlay:not(.hidden) {
+    display: flex;
+}
+
 /* Responsive tweaks */
 @media (min-width: 768px) {
     .gameDetailsContent {
@@ -274,19 +295,6 @@ textarea.formField {
 
     .hamburgerMenu ul a {
         font-size: 18px;
-    }
-
-    .menuOverlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.4);
-        z-index: 900;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease-in-out;
     }
 
     .menuOverlay.active {

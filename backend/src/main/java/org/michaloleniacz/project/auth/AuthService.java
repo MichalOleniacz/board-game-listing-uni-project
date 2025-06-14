@@ -43,13 +43,6 @@ public class AuthService {
     }
 
     public void login(RequestContext ctx) {
-        if (ctx.hasSession()) {
-            ctx.response()
-                    .status(HttpStatus.OK)
-                    .json(authSuccessResponseDto)
-                    .send();
-            return;
-        }
         AuthLoginRequestDto dto = ctx.getParsedBody();
 
         Optional<User> maybeExistingUser = userRepository.findFullUserByEmail(dto.email());

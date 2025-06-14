@@ -1,0 +1,92 @@
+version: '3.9'
+services:
+  postgres:
+    container_name: boardgamehub-core-db
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: boardgamehub
+    volumes:
+      - ./backend/postgres:/var/lib/postgresql/data
+      - ./backend/infra/db/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app
+    ports:
+      - "5432:5432"
+    profiles:
+      - db
+      - full
+
+  redis:
+    container_name: boardgamehub-core-redis
+    image: redis:7
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    ports:
+      - "6379:6379"
+    networks:
+      - app
+    profiles:
+      - db
+      - full
+
+  frontend:
+    build:
+      context: ./ui
+    container_name: boardgamehub-frontend
+    ports:
+      - "5173:80"
+    networks:
+      - app
+    profiles:
+      - full
+    volumes:
+      - ./ui/infra/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+  backend:
+    build: ./backend
+    container_name: boardgamehub-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app
+    environment:
+      - DEBUG=${DEBUG:-0}
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    profiles:
+      - full
+
+  nginx:
+    image: nginx:stable
+    container_name: nginx_proxy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/infra/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - app
+    profiles:
+      - proxy
+      - full
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  postgres:

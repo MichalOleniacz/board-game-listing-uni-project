@@ -23,7 +23,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .profileHeader {
@@ -47,6 +47,7 @@ body {
 }
 
 .profileContent {
+    width: 100%;
     padding: 20px;
 }
 
@@ -114,12 +115,10 @@ label {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--card-bg);
+    background: #ffffff;
     padding: 8px 12px;
     border-radius: 8px;
-    background: #ffffff;
-    box-shadow:  7px 7px 14px #cccccc,
-    -7px -7px 14px #ffffff;
+    box-shadow: 7px 7px 14px #cccccc, -7px -7px 14px #ffffff;
 }
 
 .preferenceItem img {
@@ -227,6 +226,24 @@ label {
     right: 0;
 }
 
+.menuOverlay {
+    display: none;
+}
+
+.menuOverlay.active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.5);
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal */
 .modalOverlay {
     position: fixed;
     top: 0;
@@ -234,14 +251,14 @@ label {
     background: rgba(0,0,0,0.5);
     width: 100vw;
     height: 100vh;
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
     z-index: 999;
 }
 
-.modalOverlay.hidden {
-    display: none;
+.modalOverlay:not(.hidden) {
+    display: flex;
 }
 
 .modalCard {
@@ -257,7 +274,7 @@ label {
     margin-bottom: 16px;
 }
 
-.deleteBtn {
+.cancelBtn {
     background: #e0e0e0;
     color: #333;
     border: none;
@@ -266,11 +283,10 @@ label {
     border-radius: 8px;
     cursor: pointer;
     width: 100%;
-    margin-top: 12px;
 }
 
 /* Desktop layout */
-@media (min-width: 768px) {
+@media screen and (min-width: 768px) {
     html, body {
         height: 100%;
         width: 100%;
@@ -345,19 +361,6 @@ label {
 
     .hamburgerMenu ul a {
         font-size: 18px;
-    }
-
-    .menuOverlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.4);
-        z-index: 900;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease-in-out;
     }
 
     .menuOverlay.active {

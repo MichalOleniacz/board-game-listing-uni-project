@@ -77,7 +77,6 @@ public class Router {
         routeRegistry.route(HttpMethod.POST, "/auth/login")
                 .middleware(corsMiddleware.allowOrigin("*"))
                 .middleware(loggerMiddleware.logRequest())
-                .middleware(sessionMiddleware.hydrateSession())
                 .middleware(bodyParserMiddleware.parseToDTO(AuthLoginRequestDto.class))
                 .handler(authController::login);
 

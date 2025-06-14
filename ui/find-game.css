@@ -150,3 +150,33 @@ h1 {
 .hamburgerMenu.open {
     right: 0;
 }
+
+.menuOverlay:not(.active) {
+    display: flex;
+}
+
+.modalCard {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.menuOverlay {
+    display: none;
+}
+
+.menuOverlay.active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.5);
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

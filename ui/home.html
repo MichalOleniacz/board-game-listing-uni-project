@@ -53,8 +53,7 @@
 
         <h3>Preferences</h3>
         <ul class="preferencesList" id="userPreferenceList">
-<!--            <li class="preferenceItem">NAME<img src="assets/delete.svg" alt="" /></li>-->
-<!--            ADDED FROM API CALL -->
+            <!-- populated dynamically -->
         </ul>
 
         <button class="addPreferenceBtn">+ Add new preference</button>
@@ -63,23 +62,14 @@
     <section class="section latestActivity">
         <h3>Latest activity</h3>
         <div class="reviewList">
-<!--            <div class="reviewCard">-->
-<!--                <div class="stars">⭐⭐⭐⭐⭐</div>-->
-<!--                <div class="reviewText">-->
-<!--                    <strong>Review title</strong>-->
-<!--                    <p>Review body</p>-->
-<!--                    <small>Reviewer name<br />Date</small>-->
-<!--                </div>-->
-<!--                <div class="reviewActions">-->
-<!--                    <img src="assets/delete.svg" alt="Delete" />-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            ADDED FROM API CALL -->
+            <!-- populated dynamically -->
         </div>
 
         <button class="viewMoreBtn">View more</button>
     </section>
 </main>
+
+<!-- Add Preference Modal -->
 <div class="modalOverlay hidden" id="preferenceModal">
     <div class="modalCard">
         <h2>Add a Preference</h2>
@@ -89,7 +79,7 @@
 
         <div class="formActions">
             <button class="formSubmitBtnWithIcon" id="savePreferenceBtn">Save</button>
-            <button class="deleteBtn" id="cancelPreferenceBtn">Cancel</button>
+            <button class="cancelBtn" id="cancelPreferenceBtn">Cancel</button>
         </div>
     </div>
 </div>
